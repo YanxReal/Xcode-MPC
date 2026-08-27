@@ -1,7 +1,7 @@
 {
   "name": "xcode-mcp-server",
-  "version": "1.2.0",
-  "description": "Servidor MCP para integración Xcode / Apple Dev Tools con OpenCode — 43 herramientas (xcodebuild, simctl, devicectl, xctrace, agvtool, Assets.xcassets + actool + AppIcon TODOS los OS + SPM/CocoaPods/Carthage)",
+  "version": "1.3.0",
+  "description": "Servidor MCP para integración Xcode / Apple Dev Tools con OpenCode — 47 herramientas (xcodebuild, simctl, devicectl, xctrace, agvtool, Assets.xcassets + actool, AppIcon ALL OS, SPM/CocoaPods/Carthage, Vision/UI)",
   "type": "module",
   "packageManager": "yarn@4.18.0",
   "bin": "./index.js",

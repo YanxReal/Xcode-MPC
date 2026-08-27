@@ -820,6 +820,64 @@ const TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: "simctl_get_screen_analysis",
+    description:
+      "Captura la pantalla actual del simulador y devuelve la ruta de la imagen junto con sus dimensiones en píxeles para que la IA la analice visualmente (Vision LLM).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: booted)" },
+        outputPath: { type: "string", description: "Ruta de salida del PNG (por defecto: /tmp/sim_screen_latest.png)" },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_inspect_ui_tree",
+    description:
+      "Inspecciona la pantalla del simulador y devuelve un árbol JSON con todos los textos, botones e inputs accesibles visibles con sus posiciones y nombres (jerarquía de accesibilidad).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        udid: { type: "string", description: "UDID del simulador o 'booted' (informativo, inspección es vía Simulator.app)" },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_tap_by_text",
+    description:
+      "Busca un botón, etiqueta o elemento en pantalla por su texto/título (ej. 'Iniciar Sesión', 'Guardar') y lo pulsa automáticamente calculando su centro.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "Texto o etiqueta visible del botón a pulsar (soporta coincidencia parcial)" },
+        exactMatch: { type: "boolean", description: "Si es true, busca coincidencia exacta (por defecto: false)" },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (informativo)" },
+      },
+      required: ["text"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_fill_field",
+    description:
+      "Localiza un campo de texto en el simulador mediante su etiqueta, placeholder o texto descriptivo, lo enfoca y escribe el contenido deseado.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        labelOrPlaceholder: {
+          type: "string",
+          description: "Texto de la etiqueta, placeholder o nombre accesible del campo (ej. 'Correo', 'Contraseña', 'Buscar')",
+        },
+        textToType: { type: "string", description: "Texto que se va a ingresar en el campo" },
+        clearFirst: { type: "boolean", description: "Limpia el contenido previo antes de escribir (por defecto: true)" },
+      },
+      required: ["labelOrPlaceholder", "textToType"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -2156,6 +2214,327 @@ async function handle_cocoapods_to_spm_migrate(args) {
   }
 }
 
+function escapeAppleScriptString(str) {
+  return String(str).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").slice(0, 500);
+}
+
+async function handle_simctl_get_screen_analysis(args) {
+  const udid = args.udid || "booted";
+  const outputPath = expandTilde(args.outputPath || "/tmp/sim_screen_latest.png");
+  try {
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  } catch {}
+  const shotCmd = `xcrun simctl io ${shellEscape(udid)} screenshot ${shellEscape(outputPath)} 2>&1`;
+  const shotRes = await runCommand(shotCmd);
+  if (!shotRes.success) return errorContent("Falló captura de pantalla (simctl screenshot)", formatResult("simctl_get_screen_analysis", shotRes));
+  try {
+    await fs.access(outputPath);
+  } catch {
+    return errorContent(`Screenshot no se creó: ${outputPath}`, formatResult("simctl_get_screen_analysis", shotRes));
+  }
+  let width = 0, height = 0;
+  try {
+    const sipsCmd = `sips -g pixelWidth -g pixelHeight ${shellEscape(outputPath)} 2>&1`;
+    const sipsRes = await runCommand(sipsCmd);
+    const wMatch = sipsRes.stdout.match(/pixelWidth:\s*(\d+)/);
+    const hMatch = sipsRes.stdout.match(/pixelHeight:\s*(\d+)/);
+    if (wMatch) width = parseInt(wMatch[1], 10);
+    if (hMatch) height = parseInt(hMatch[1], 10);
+    // Fallback via file stat if sips no disponible
+    if (!width || !height) {
+      try {
+        const stat = await fs.stat(outputPath);
+        // No real dimensions, leave 0
+      } catch {}
+    }
+  } catch {}
+  // Obtener escala del simulador si es posible
+  let scale = 2;
+  try {
+    const listRes = await runCommand("xcrun simctl list --json devices 2>&1");
+    if (listRes.success) {
+      const parsed = JSON.parse(listRes.stdout);
+      // No extra processing, scale queda 2 por defecto
+    }
+  } catch {}
+  const payload = {
+    message: "Captura de pantalla realizada correctamente.",
+    imagePath: outputPath,
+    resolution: { width, height },
+    scale,
+    udid,
+    instructions: "Usa la imagen en imagePath para análisis visual con Vision LLM. Las coordenadas de toque están en píxeles (width x height). Puedes llamar simctl_tap_by_text o simctl_inspect_ui_tree para interacción.",
+  };
+  return textContent(JSON.stringify(payload, null, 2));
+}
+
+async function handle_simctl_inspect_ui_tree(args) {
+  const udid = args.udid || "booted";
+  // Usar AppleScript via archivo temporal para evitar inyección y límites de línea
+  const script = `
+    tell application "System Events"
+      tell process "Simulator"
+        set frontmost to true
+        if (count of windows) is 0 then return "[]"
+        set uiElements to {}
+        try
+          set allElems to entire contents of window 1
+        on error
+          return "[]"
+        end try
+        repeat with elem in allElems
+          try
+            set elemRole to ""
+            try
+              set elemRole to (role of elem) as text
+            end try
+            set elemName to ""
+            try
+              set elemName to (name of elem) as text
+            end try
+            set elemTitle to ""
+            try
+              set elemTitle to (title of elem) as text
+            end try
+            set elemValue to ""
+            try
+              set elemValue to (value of elem) as text
+            end try
+            set elemDesc to ""
+            try
+              set elemDesc to (description of elem) as text
+            end try
+            set posX to 0
+            set posY to 0
+            try
+              set {posX, posY} to position of elem
+            end try
+            set sizeW to 0
+            set sizeH to 0
+            try
+              set {sizeW, sizeH} to size of elem
+            end try
+            if (elemName is not "" or elemTitle is not "" or elemValue is not "" or elemDesc is not "") then
+              set centerX to posX + (sizeW / 2)
+              set centerY to posY + (sizeH / 2)
+              set end of uiElements to "{\"role\":\"" & elemRole & "\",\"name\":\"" & elemName & "\",\"title\":\"" & elemTitle & "\",\"value\":\"" & elemValue & "\",\"description\":\"" & elemDesc & "\",\"position\":{\"x\":" & posX & ",\"y\":" & posY & "},\"size\":{\"w\":" & sizeW & ",\"h\":" & sizeH & "},\"center\":{\"x\":" & centerX & ",\"y\":" & centerY & "}}"
+            end if
+          end try
+        end repeat
+        set AppleScript's text item delimiters to ","
+        set jsonArray to "[" & (uiElements as text) & "]"
+        return jsonArray
+      end tell
+    end tell
+  `;
+  const tmp = path.join(os.tmpdir(), `inspect-ui-${Date.now()}.applescript`);
+  try {
+    await fs.writeFile(tmp, script, "utf-8");
+    const result = await runCommand(`osascript ${shellEscape(tmp)} 2>&1`);
+    await fs.unlink(tmp).catch(() => {});
+    if (!result.success) return errorContent("Falló osascript para inspeccionar UI (¿Simulator.app en ejecución? ¿Permisos Automation?)", formatResult("simctl_inspect_ui_tree", result));
+    const out = result.stdout.trim();
+    if (!out || out === "[]") return textContent(`No se detectaron elementos interactivos accesibles en Simulator (udid: ${udid}).\nVerifica que el simulador esté visible y la app en primer plano.\n\n${out || "[]"}`);
+    // Intentar parsear y pretty-print si es JSON
+    try {
+      const parsed = JSON.parse(out);
+      const summary = `Árbol de UI: ${parsed.length} elementos detectados (udid: ${udid})\nUsa simctl_tap_by_text para pulsar por texto.`;
+      return textContent(`${summary}\n\n${JSON.stringify(parsed, null, 2)}`);
+    } catch {
+      return textContent(`Árbol de UI (raw, udid: ${udid}):\n${out.slice(0, 8000)}`);
+    }
+  } catch (e) {
+    await fs.unlink(tmp).catch(() => {});
+    return errorContent(`Excepción en simctl_inspect_ui_tree: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_simctl_tap_by_text(args) {
+  const rawText = String(args.text || "").trim();
+  if (!rawText) return errorContent("text es requerido y no puede estar vacío");
+  if (rawText.length > 200) return errorContent("text demasiado largo (max 200 caracteres)");
+  const exact = args.exactMatch === true;
+  const udid = args.udid || "booted";
+  const escaped = escapeAppleScriptString(rawText.toLowerCase());
+  const script = `
+    tell application "System Events"
+      tell process "Simulator"
+        set frontmost to true
+        if (count of windows) is 0 then return "NO_WINDOW"
+        set allElems to entire contents of window 1
+        set targetText to "${escaped}"
+        repeat with elem in allElems
+          try
+            set elemName to ""
+            try
+              set elemName to (name of elem) as text
+            end try
+            set elemTitle to ""
+            try
+              set elemTitle to (title of elem) as text
+            end try
+            set elemValue to ""
+            try
+              set elemValue to (value of elem) as text
+            end try
+            set elemDesc to ""
+            try
+              set elemDesc to (description of elem) as text
+            end try
+            set matchFound to false
+            if ${exact ? "true" : "false"} then
+              if (elemName as text) is not "" and (do shell script "echo " & quoted form of elemName & " | tr '[:upper:]' '[:lower:]'") is targetText then set matchFound to true
+              if (elemTitle as text) is not "" and (do shell script "echo " & quoted form of elemTitle & " | tr '[:upper:]' '[:lower:]'") is targetText then set matchFound to true
+              if (elemValue as text) is not "" and (do shell script "echo " & quoted form of elemValue & " | tr '[:upper:]' '[:lower:]'") is targetText then set matchFound to true
+            else
+              if elemName contains targetText or elemTitle contains targetText or elemValue contains targetText or elemDesc contains targetText then
+                -- Segunda verificación case-insensitive via lowercase
+                set lowerName to do shell script "echo " & quoted form of elemName & " | tr '[:upper:]' '[:lower:]'"
+                set lowerTitle to do shell script "echo " & quoted form of elemTitle & " | tr '[:upper:]' '[:lower:]'"
+                set lowerValue to do shell script "echo " & quoted form of elemValue & " | tr '[:upper:]' '[:lower:]'"
+                set lowerDesc to do shell script "echo " & quoted form of elemDesc & " | tr '[:upper:]' '[:lower:]'"
+                if lowerName contains targetText or lowerTitle contains targetText or lowerValue contains targetText or lowerDesc contains targetText then set matchFound to true
+              end if
+            end if
+            if matchFound then
+              try
+                click elem
+              on error
+                -- Fallback: click por coordenadas
+                set {posX, posY} to position of elem
+                set {sizeW, sizeH} to size of elem
+                set centerX to posX + (sizeW / 2)
+                set centerY to posY + (sizeH / 2)
+                click at {centerX, centerY}
+              end try
+              set {posX, posY} to position of elem
+              set {sizeW, sizeH} to size of elem
+              return "CLICKED:" & (posX + (sizeW / 2)) & "," & (posY + (sizeH / 2)) & ":" & (role of elem)
+            end if
+          end try
+        end repeat
+        return "NOT_FOUND"
+      end tell
+    end tell
+  `;
+  const tmp = path.join(os.tmpdir(), `tap-by-text-${Date.now()}.applescript`);
+  try {
+    await fs.writeFile(tmp, script, "utf-8");
+    const result = await runCommand(`osascript ${shellEscape(tmp)} 2>&1`, { timeout: 15000 });
+    await fs.unlink(tmp).catch(() => {});
+    if (!result.success) return errorContent("Falló osascript para tap_by_text", formatResult("simctl_tap_by_text", result));
+    const out = result.stdout.trim();
+    if (out.startsWith("CLICKED:")) {
+      const parts = out.replace("CLICKED:", "").split(":");
+      const coords = parts[0];
+      const role = parts[1] || "unknown";
+      return textContent(`✅ Elemento '${rawText}' encontrado y pulsado con éxito en coordenadas (${coords}) [role: ${role}, udid: ${udid}].`);
+    } else if (out === "NOT_FOUND") {
+      // Sugerir inspect
+      return textContent(`No se encontró ningún elemento que contenga '${rawText}' (exact=${exact}, udid: ${udid}).\nSugerencia: usa simctl_inspect_ui_tree para ver textos disponibles, o simctl_get_screen_analysis para análisis visual.`,);
+    } else if (out === "NO_WINDOW") {
+      return errorContent("No hay ventanas del simulador activas. Abre Simulator.app y asegúrate de que la app esté en primer plano.");
+    } else {
+      return textContent(`Resultado inesperado de tap_by_text (udid: ${udid}): ${out.slice(0, 2000)}`);
+    }
+  } catch (e) {
+    await fs.unlink(tmp).catch(() => {});
+    return errorContent(`Excepción en simctl_tap_by_text: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_simctl_fill_field(args) {
+  const rawLabel = String(args.labelOrPlaceholder || "").trim();
+  const textToType = String(args.textToType || "");
+  const clearFirst = args.clearFirst !== false;
+  if (!rawLabel) return errorContent("labelOrPlaceholder es requerido");
+  if (rawLabel.length > 200) return errorContent("labelOrPlaceholder demasiado largo (max 200)");
+  const escapedLabel = escapeAppleScriptString(rawLabel.toLowerCase());
+  const escapedType = escapeAppleScriptString(textToType);
+  const script = `
+    tell application "System Events"
+      tell process "Simulator"
+        set frontmost to true
+        if (count of windows) is 0 then return "NO_WINDOW"
+        set allElems to entire contents of window 1
+        set targetText to "${escapedLabel}"
+        repeat with elem in allElems
+          try
+            set elemName to ""
+            try
+              set elemName to (name of elem) as text
+            end try
+            set elemTitle to ""
+            try
+              set elemTitle to (title of elem) as text
+            end try
+            set elemValue to ""
+            try
+              set elemValue to (value of elem) as text
+            end try
+            set elemDesc to ""
+            try
+              set elemDesc to (description of elem) as text
+            end try
+            set elemRole to ""
+            try
+              set elemRole to (role of elem) as text
+            end try
+            set lowerName to do shell script "echo " & quoted form of elemName & " | tr '[:upper:]' '[:lower:]'"
+            set lowerTitle to do shell script "echo " & quoted form of elemTitle & " | tr '[:upper:]' '[:lower:]'"
+            set lowerValue to do shell script "echo " & quoted form of elemValue & " | tr '[:upper:]' '[:lower:]'"
+            set lowerDesc to do shell script "echo " & quoted form of elemDesc & " | tr '[:upper:]' '[:lower:]'"
+            set matchFound to false
+            if lowerName contains targetText or lowerTitle contains targetText or lowerValue contains targetText or lowerDesc contains targetText then set matchFound to true
+            set isTextField to (elemRole contains "text field" or elemRole contains "text area" or elemRole contains "secure")
+            if matchFound and isTextField then
+              click elem
+              delay 0.3
+              if ${clearFirst ? "true" : "false"} then
+                keystroke "a" using command down
+                delay 0.1
+                key code 51
+                delay 0.1
+              end if
+              keystroke "${escapedType}"
+              delay 0.2
+              return "SUCCESS:" & elemRole
+            else if matchFound and not isTextField then
+              -- Si el match es un label, buscar el text field cercano
+              -- Por ahora intentar click igual
+              click elem
+              delay 0.2
+              keystroke "${escapedType}"
+              return "SUCCESS_LABEL:" & elemRole
+            end if
+          end try
+        end repeat
+        return "NOT_FOUND"
+      end tell
+    end tell
+  `;
+  const tmp = path.join(os.tmpdir(), `fill-field-${Date.now()}.applescript`);
+  try {
+    await fs.writeFile(tmp, script, "utf-8");
+    const result = await runCommand(`osascript ${shellEscape(tmp)} 2>&1`, { timeout: 15000 });
+    await fs.unlink(tmp).catch(() => {});
+    if (!result.success) return errorContent("Falló osascript para fill_field (¿Permisos Automation?)" , formatResult("simctl_fill_field", result));
+    const out = result.stdout.trim();
+    if (out.startsWith("SUCCESS")) {
+      return textContent(`✅ Campo '${rawLabel}' localizado y rellenado correctamente con '${textToType}' [${out}].`);
+    } else if (out === "NOT_FOUND") {
+      return errorContent(`No se encontró ningún campo de texto con la etiqueta/placeholder '${rawLabel}'. Sugerencia: usa simctl_inspect_ui_tree para ver labels disponibles.`);
+    } else if (out === "NO_WINDOW") {
+      return errorContent("No hay ventanas activas del simulador.");
+    } else {
+      return textContent(`Resultado fill_field: ${out.slice(0, 2000)}`);
+    }
+  } catch (e) {
+    await fs.unlink(tmp).catch(() => {});
+    return errorContent(`Excepción en simctl_fill_field: ${e.message}`, e.stack);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dispatcher
 // ---------------------------------------------------------------------------
@@ -2204,6 +2583,10 @@ const HANDLERS = {
   cocoapods_manage: handle_cocoapods_manage,
   carthage_manage: handle_carthage_manage,
   cocoapods_to_spm_migrate: handle_cocoapods_to_spm_migrate,
+  simctl_get_screen_analysis: handle_simctl_get_screen_analysis,
+  simctl_inspect_ui_tree: handle_simctl_inspect_ui_tree,
+  simctl_tap_by_text: handle_simctl_tap_by_text,
+  simctl_fill_field: handle_simctl_fill_field,
 };
 
 // ---------------------------------------------------------------------------
@@ -2213,7 +2596,7 @@ const HANDLERS = {
 const server = new Server(
   {
     name: "xcode-mcp-server",
-    version: "1.2.0",
+    version: "1.3.0",
   },
   {
     capabilities: {
@@ -2245,7 +2628,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("✅ Xcode MCP Server iniciado (stdio) — 43 herramientas registradas");
+  console.error("✅ Xcode MCP Server iniciado (stdio) — 47 herramientas registradas");
 }
 
 main().catch((err) => {

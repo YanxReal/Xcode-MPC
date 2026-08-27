@@ -1,4 +1,4 @@
-# Referencia de Herramientas (43)
+# Referencia de Herramientas (47)
 
 > 🌐 **Idioma:** [English](../tools.md) | **Español**
 
@@ -275,6 +275,93 @@ Borrado seguro: valida extensión `*.colorset|*.imageset|...` y que esté dentro
 { "xcassetsPath": "/ruta/a/Assets.xcassets", "platform": "iphoneos" }
 ```
 `xcrun actool "${xcassetsPath}" --compile /tmp/actool_out --platform iphoneos --minimum-deployment-target 15.0 --output-format human-readable-text`. Retorna resultado `Assets.car` + `✅` o `⚠️` advertencias. Valida imágenes faltantes, nombres duplicados.
+
+---
+
+## 10. AppIcon `Assets.xcassets` + `sips` (1 herramienta)
+
+### `asset_generate_appicon`
+```json
+{ "xcassetsPath": "/ruta/a/Assets.xcassets", "iconName": "AppIcon", "baseImagePath": "/tmp/1024.png", "includeIos": true, "includeMacOs": true, "includeWatchOs": true, "includeTvOs": true, "includeVisionOs": true }
+```
+Genera `${iconName}.appiconset/Contents.json` con **42 slots** para **TODOS los OS**: iOS (iphone/ipad/ios-marketing), macOS (16-512), watchOS (38/42/45mm), tvOS (400x240/1280x768), visionOS (32/1024). Si `baseImagePath`, ejecuta `sips -z {pixels} {base} --out {slot}` por slot.
+
+---
+
+## 11. Paquetes / SPM / CocoaPods / Carthage (11 herramientas)
+
+### `package_resolve` / `package_update`
+```json
+{ "projectPath": "/ruta/a/MyApp.xcodeproj" }
+```
+Autodetecta `Package.swift` (`swift package resolve/update`) vs `xcodebuild -resolvePackageDependencies`.
+
+### `package_list_dependencies`
+```json
+{ "packageDirectory": "/ruta/a/Package.swift/dir" }
+```
+`swift package show-dependencies --format json`
+
+### `package_read_resolved`
+```json
+{ "resolvedFilePath": "/ruta/a/Package.resolved" }
+```
+Soporta v1/v2/v3, retorna `{version, totalDependencies, pins}`
+
+### `package_reset_cache`
+```json
+{ "projectPath": "/ruta/a/MyApp.xcodeproj" }
+```
+`xcodebuild -resetPackageCaches` + `rm -rf ~/Library/Caches/org.swift.swiftpm`
+
+### `package_compute_checksum`
+```json
+{ "zipPath": "/ruta/a/MyXCFramework.zip" }
+```
+`swift package compute-checksum`
+
+### `spm_add_dependency` / `spm_remove_dependency`
+```json
+{ "packageSwiftPath": "/ruta/a/Package.swift", "url": "https://github.com/Alamofire/Alamofire.git", "requirement": "from: \"5.8.0\"" }
+```
+
+### `cocoapods_manage` / `carthage_manage`
+```json
+{ "projectPath": "/ruta/a/Podfile/dir", "action": "install" }
+```
+
+### `cocoapods_to_spm_migrate`
+```json
+{ "podfilePath": "/ruta/a/Podfile", "packageSwiftPath": "/ruta/a/Package.swift", "dryRun": true }
+```
+
+---
+
+## 12. Visión / UI Inteligente (4 herramientas)
+
+### `simctl_get_screen_analysis`
+```json
+{ "udid": "booted", "outputPath": "/tmp/sim_screen_latest.png" }
+```
+`xcrun simctl io screenshot` + `sips -g pixelWidth/Height` → `{imagePath, resolution, instructions}` para Vision LLM.
+
+### `simctl_inspect_ui_tree`
+```json
+{ "udid": "booted" }
+```
+AppleScript vía archivo temporal → JSON `[{role,name,title,value,center}]`.
+
+### `simctl_tap_by_text`
+```json
+{ "text": "Continuar", "exactMatch": false }
+```
+Búsqueda insensible a mayúsculas partial/exact, click centro, retorna `CLICKED:x,y`.
+
+### `simctl_fill_field`
+```json
+{ "labelOrPlaceholder": "Correo", "textToType": "test@example.com", "clearFirst": true }
+```
+Localiza `role contains "text field"`, `click`, `clearFirst` con `keystroke "a" using command down`, luego `keystroke`.
 
 ---
 

@@ -1,4 +1,4 @@
-# Tools Reference (43)
+# Tools Reference (47)
 
 > 🌐 **Language:** **English** | [Español](es/tools.md)
 
@@ -275,6 +275,96 @@ Safe delete: validates `*.colorset|*.imageset|...` extension and `.xcassets` con
 { "xcassetsPath": "/path/to/Assets.xcassets", "platform": "iphoneos" }
 ```
 `xcrun actool "${xcassetsPath}" --compile /tmp/actool_out --platform iphoneos --minimum-deployment-target 15.0 --output-format human-readable-text`. Returns `Assets.car` result + `✅` or `⚠️` warnings. Validates missing images, duplicate names.
+
+---
+
+## 10. AppIcon `Assets.xcassets` + `sips` (1 tool)
+
+### `asset_generate_appicon`
+```json
+{ "xcassetsPath": "/path/to/Assets.xcassets", "iconName": "AppIcon", "baseImagePath": "/tmp/1024.png", "includeIos": true, "includeMacOs": true, "includeWatchOs": true, "includeTvOs": true, "includeVisionOs": true }
+```
+Generates `${iconName}.appiconset/Contents.json` with **42 slots** for **ALL Apple OS**: iOS (iphone/ipad/ios-marketing 20x20-1024), macOS (16x16-512x512), watchOS (38/42/45mm roles), tvOS (400x240/1280x768), visionOS (32/1024). If `baseImagePath` provided, runs `sips -z {pixels} {base} --out {slot}` per slot.
+
+---
+
+## 11. Package / SPM / CocoaPods / Carthage (11 tools)
+
+### `package_resolve` / `package_update`
+```json
+{ "projectPath": "/path/to/MyApp.xcodeproj" }
+```
+Auto-detects `Package.swift` (`swift package resolve/update`) vs `xcodebuild -resolvePackageDependencies`.
+
+### `package_list_dependencies`
+```json
+{ "packageDirectory": "/path/to/Package.swift/dir" }
+```
+`swift package show-dependencies --format json`
+
+### `package_read_resolved`
+```json
+{ "resolvedFilePath": "/path/to/Package.resolved" }
+```
+Supports v1/v2/v3 format, returns `{version, totalDependencies, pins:[{identity, location, version, revision}]}`
+
+### `package_reset_cache`
+```json
+{ "projectPath": "/path/to/MyApp.xcodeproj" }
+```
+`xcodebuild -resetPackageCaches` + `rm -rf ~/Library/Caches/org.swift.swiftpm`
+
+### `package_compute_checksum`
+```json
+{ "zipPath": "/path/to/MyXCFramework.zip" }
+```
+`swift package compute-checksum`
+
+### `spm_add_dependency` / `spm_remove_dependency`
+```json
+{ "packageSwiftPath": "/path/to/Package.swift", "url": "https://github.com/Alamofire/Alamofire.git", "requirement": "from: \"5.8.0\"" }
+```
+Edits `dependencies: [...]` array in Package.swift.
+
+### `cocoapods_manage` / `carthage_manage`
+```json
+{ "projectPath": "/path/to/Podfile/dir", "action": "install", "repoUpdate": false }
+{ "projectPath": "/path/to/Cartfile/dir", "action": "bootstrap", "platform": "iOS", "useXcframeworks": true }
+```
+
+### `cocoapods_to_spm_migrate`
+```json
+{ "podfilePath": "/path/to/Podfile", "packageSwiftPath": "/path/to/Package.swift", "dryRun": true }
+```
+Parses `pod 'SnapKit', '~> 5.0'` → `.upToNextMajor`, supports `dryRun` preview.
+
+---
+
+## 12. Vision / Smart UI (4 tools)
+
+### `simctl_get_screen_analysis`
+```json
+{ "udid": "booted", "outputPath": "/tmp/sim_screen_latest.png" }
+```
+`xcrun simctl io screenshot` + `sips -g pixelWidth/Height` → `{imagePath, resolution:{width,height}, instructions}` for Vision LLM.
+
+### `simctl_inspect_ui_tree`
+```json
+{ "udid": "booted" }
+```
+AppleScript via temp file → JSON array `[{role,name,title,value,description,position:{x,y},size:{w,h},center:{x,y}}]`. Fallback to raw if not JSON.
+
+### `simctl_tap_by_text`
+```json
+{ "text": "Continuar", "exactMatch": false, "udid": "booted" }
+```
+Case-insensitive partial/exact search via AppleScript `System Events` `entire contents of window 1`, clicks `elem` or `click at {centerX,centerY}`, returns `CLICKED:x,y:role`.
+
+### `simctl_fill_field`
+```json
+{ "labelOrPlaceholder": "Correo", "textToType": "test@example.com", "clearFirst": true }
+```
+Finds `role contains "text field"` matching label, `click`, `keystroke "a" using command down` + `key code 51` if `clearFirst`, then `keystroke "text"`.
 
 ---
 

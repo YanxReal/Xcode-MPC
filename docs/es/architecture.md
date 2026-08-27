@@ -10,8 +10,8 @@
 index.js
 ├── Shebang + Imports (MCP SDK, child_process, fs, path, os)
 ├── Helpers (shellEscape, expandTilde, runCommand, formatResult, findLatestXcresult)
-├── TOOLS (25 definiciones JSON Schema)
-├── Handlers (25 async functions handle_*)
+├── TOOLS (47 definiciones JSON Schema)
+├── Handlers (47 async functions handle_*)
 ├── Dispatcher (HANDLERS map)
 └── Server (Server + StdioServerTransport + ListTools/CallTool)
 ```
