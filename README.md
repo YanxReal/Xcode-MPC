@@ -2,9 +2,9 @@
 
 # Xcode MCP Server
 
-**Servidor Model Context Protocol para el ecosistema Apple**
+**Model Context Protocol Server for the Apple Ecosystem**
 
-*Conecta OpenCode, Codex y Claude Code con Xcode — 25 herramientas profesionales en un solo `index.js`*
+*Connect OpenCode, Codex and Claude Code to Xcode — 25 professional tools in a single `index.js`*
 
 [![CI](https://github.com/YanxReal/Xcode-MPC/actions/workflows/ci.yml/badge.svg)](https://github.com/YanxReal/Xcode-MPC/actions)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
@@ -13,163 +13,165 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
 
-[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-25) • [OpenCode](docs/opencode.md) • [Codex](docs/codex.md) • [Claude Code](docs/claude-code.md) • [Docs](docs/architecture.md)
+> 🌐 **Language:** **English** | [Español](README.es.md)
+
+[Installation](#-step-by-step-installation) • [Tools](#-tools-25) • [OpenCode](docs/opencode.md) • [Codex](docs/codex.md) • [Claude Code](docs/claude-code.md) • [Docs](docs/architecture.md)
 
 </div>
 
 ---
 
-## ¿Qué es esto?
+## What is this?
 
-**Xcode MCP Server** es un puente **serio y listo para producción** entre tu **IDE con IA** (OpenCode / Codex / Claude Code) y **Xcode + Apple Dev Tools**.
+**Xcode MCP Server** is a **serious, production-ready** bridge between your **AI IDE** (OpenCode / Codex / Claude Code) and **Xcode + Apple Dev Tools**.
 
-> Un LLM ya no solo escribe Swift: **compila, testea, perfila, maneja simuladores, dispositivos físicos, firma y hasta abre Xcode en la línea exacta** — todo vía MCP `stdio` sin servidores HTTP.
+> An LLM no longer just writes Swift: it **builds, tests, profiles, manages simulators, physical devices, signing and even opens Xcode on the exact line** — all via MCP `stdio` with no HTTP server.
 
 **Stack:** `ES Modules` · `@modelcontextprotocol/sdk@1.30` · `StdioServerTransport` · `promisify(exec)` · `Yarn 4 Berry` · `Make`
 
 <details>
-<summary><strong>¿Por qué este servidor y no otro?</strong></summary>
+<summary><strong>Why this server and not another?</strong></summary>
 
-- ✅ **Single-file `index.js` (1220 líneas)** — sin build, sin compilar, auditable en 1 archivo. Shebang `#!/usr/bin/env node`, listo para `node`, `yarn start` o `npx`.
-- ✅ **25 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
-- ✅ **Cobertura Apple total:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
-- ✅ **DX moderna:** Yarn 4 vendorizado (`.yarn/releases`), `Makefile` con `help` autodocumentado, `docs/` modular, CI macOS + `make test` smoke.
-- ✅ **Multi-cliente:** mismo `index.js` funciona en **OpenCode**, **Codex** y **Claude Code** sin cambios.
+- ✅ **Single-file `index.js` (1220 lines)** — no build step, no compile, auditable in one file. Shebang `#!/usr/bin/env node`, ready for `node`, `yarn start` or `npx`.
+- ✅ **25 tools with strict JSON Schema** (`additionalProperties:false`) + global `try/catch`. Each tool returns `content: [{type:"text"}]` and `isError:true` on failure — no `// TODO`.
+- ✅ **Full Apple coverage:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
+- ✅ **Modern DX:** Vendored Yarn 4 (`.yarn/releases`), self-documenting `Makefile` with `help`, modular `docs/`, macOS CI + `make test` smoke.
+- ✅ **Multi-client:** same `index.js` works with **OpenCode**, **Codex** and **Claude Code** without changes.
 
 </details>
 
 ---
 
-## ✨ Características
+## ✨ Features
 
-| Categoría | Herramientas | Descripción |
+| Category | Tools | Description |
 |---|---|---|
-| **Compilación** | 6 | `xcode_build`, `xcode_clean` (+ purge DerivedData), `xcode_list_schemes`, `xcode_analyze`, `xcode_archive_export` (`.ipa`), `swift_format_lint` |
-| **Tests** | 2 | `xcode_run_tests` (filtro `onlyTesting`), `xcode_test_coverage` (`xccov --json`) |
-| **Simuladores** | 9 | `simctl_list`, `lifecycle` (boot/shutdown/erase), `install_launch`, `media_capture`, `push_notification`, `location_mock`, `privacy_control`, `ui_appearance`, `open_url` |
-| **Dispositivos** | 2 | `devicectl_list`, `devicectl_logs` (streaming N segundos) |
-| **Perfilado** | 1 | `xctrace_profile` (Time Profiler, Allocations, Leaks, System Trace…) |
-| **Versiones** | 2 | `agvtool_version_bump`, `xcode_certificates_check` |
+| **Build** | 6 | `xcode_build`, `xcode_clean` (+ purge DerivedData), `xcode_list_schemes`, `xcode_analyze`, `xcode_archive_export` (`.ipa`), `swift_format_lint` |
+| **Tests** | 2 | `xcode_run_tests` (`onlyTesting` filter), `xcode_test_coverage` (`xccov --json`) |
+| **Simulators** | 9 | `simctl_list`, `lifecycle` (boot/shutdown/erase), `install_launch`, `media_capture`, `push_notification`, `location_mock`, `privacy_control`, `ui_appearance`, `open_url` |
+| **Devices** | 2 | `devicectl_list`, `devicectl_logs` (N-second streaming) |
+| **Profiling** | 1 | `xctrace_profile` (Time Profiler, Allocations, Leaks, System Trace…) |
+| **Versions** | 2 | `agvtool_version_bump`, `xcode_certificates_check` |
 | **Editor** | 2 | `xcode_get_active_file` (AppleScript), `xcode_open_at_line` (`xed` → `xcode://`) |
-| **Localización** | 1 | `xcode_sync_strings` (`.xcstrings` → missing/pending/empty) |
+| **Localization** | 1 | `xcode_sync_strings` (`.xcstrings` → missing/pending/empty) |
 
 ---
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-1. [Requisitos](#-requisitos)
-2. [Instalación paso a paso](#-instalación-paso-a-paso)
-3. [Verificación](#-verificación)
-4. [Uso con OpenCode / Codex / Claude Code](#-uso-con-opencode--codex--claude-code)
-5. [Herramientas (25)](#-herramientas-25)
-6. [Comandos Make](#-comandos-make)
-7. [Documentación](#-documentación)
-8. [Arquitectura](#-arquitectura)
-9. [Contribuir](#-contribuir)
+1. [Requirements](#-requirements)
+2. [Step-by-step Installation](#-step-by-step-installation)
+3. [Verification](#-verification)
+4. [Usage with OpenCode / Codex / Claude Code](#-usage-with-opencode--codex--claude-code)
+5. [Tools (25)](#-tools-25)
+6. [Make Commands](#-make-commands)
+7. [Documentation](#-documentation)
+8. [Architecture](#-architecture)
+9. [Contributing](#-contributing)
 
 ---
 
-## 📦 Requisitos
+## 📦 Requirements
 
-| Dependencia | Versión | Instalación | Obligatorio |
+| Dependency | Version | Install | Required |
 |---|---|---|---|
-| **macOS** | 13+ (14+ recomendado) | — | ✅ para `xcodebuild`/`simctl` |
+| **macOS** | 13+ (14+ recommended) | — | ✅ for `xcodebuild`/`simctl` |
 | **Xcode** | 15+ | App Store → `xcode-select --install` | ✅ |
 | **Node.js** | ≥ 18 | `brew install node` → `node --version` | ✅ |
 | **Yarn** | 4.x Berry | `corepack enable && corepack prepare yarn@stable --activate` | ✅ |
-| **make** | 3.81+ | `xcode-select --install` (incluye make) | ✅ |
-| **swift-format** | latest | `brew install swift-format` | ◻️ opcional |
-| **swiftlint** | latest | `brew install swiftlint` | ◻️ opcional |
+| **make** | 3.81+ | `xcode-select --install` (includes make) | ✅ |
+| **swift-format** | latest | `brew install swift-format` | ◻️ optional |
+| **swiftlint** | latest | `brew install swiftlint` | ◻️ optional |
 
-> **Linux/Windows:** solo `make lint` funciona (sin Xcode). El CI corre un job `syntax-linux` para eso.
+> **Linux/Windows:** only `make lint` works (no Xcode). CI runs a `syntax-linux` job for that.
 
 ---
 
-## 🚀 Instalación paso a paso
+## 🚀 Step-by-step Installation
 
-Sigue **exactamente** este orden. Copia y pega bloque por bloque.
+Follow **exactly** in this order. Copy and paste block by block.
 
-### Paso 0 — Verifica que tienes Xcode y Node
+### Step 0 — Verify Xcode and Node
 
 ```bash
 xcodebuild -version
 # Xcode 15.4  Build version 15F31d
 
 node --version
-# v20.11.0 (o superior)
+# v20.11.0 (or newer)
 
 yarn --version
-# 4.18.0 — si dice "command not found", haz:
+# 4.18.0 — if "command not found", run:
 corepack enable
 corepack prepare yarn@stable --activate
 yarn --version
 ```
 
-### Paso 1 — Clona el repositorio
+### Step 1 — Clone the repository
 
 ```bash
 git clone https://github.com/YanxReal/Xcode-MPC.git
 cd Xcode-MPC
 ```
 
-### Paso 2 — Instala dependencias
+### Step 2 — Install dependencies
 
-**Opción A — con Make (recomendada, moderna):**
+**Option A — with Make (recommended, modern):**
 
 ```bash
 make install
 ```
 
-Qué hace `make install`:
-1. Detecta `yarn`, si no existe lo instala vía `corepack`
-2. Ejecuta `yarn install` (lee `yarn.lock`, instala `@modelcontextprotocol/sdk`)
-3. Hace `chmod +x index.js`
+What `make install` does:
+1. Detects `yarn`, installs via `corepack` if missing
+2. Runs `yarn install` (reads `yarn.lock`, installs `@modelcontextprotocol/sdk`)
+3. Runs `chmod +x index.js`
 
-Salida esperada:
+Expected output:
 ```
 ➤ YN0000: · Yarn 4.18.0
 ➤ YN0000: ┌ Resolution step
 ➤ YN0000: └ Completed
 ➤ YN0000: · Done with warnings in 3s
-✓ dependencias instaladas
+✓ dependencies installed
 ```
 
-**Opción B — con Yarn directo:**
+**Option B — with Yarn directly:**
 
 ```bash
 yarn install
 chmod +x index.js
 ```
 
-**Si vienes de npm:**
+**If you come from npm:**
 
 ```bash
 rm -f package-lock.json
 yarn install
 ```
 
-### Paso 3 — Verifica el entorno
+### Step 3 — Verify the environment
 
 ```bash
 make doctor
 ```
 
-Debe mostrar:
+Should show:
 ```
 Node: v20.x
 Yarn: 4.18.0
 Xcode: Xcode 15.x
 xcrun: xcrun version 70
 ...
-✓ doctor completo
+✓ doctor complete
 ```
 
-Si ves `xcodebuild: command not found`:
+If you see `xcodebuild: command not found`:
 ```bash
 sudo xcode-select -s /Applications/Xcode.app
 ```
 
-### Paso 4 — Valida el servidor MCP
+### Step 4 — Validate the MCP server
 
 ```bash
 make lint
@@ -178,80 +180,80 @@ make lint
 
 make test
 # ➜ smoke test MCP...
-# ✓ tools/list: 25 herramientas
+# ✓ tools/list: 25 tools
 # ✓ xcode_sync_strings OK
 # ✓ xcode_certificates_check OK
 # ✓ smoke test PASSED
 ```
 
-O manual:
+Or manually:
 ```bash
 python3 scripts/smoke_test.py
-# o
+# or
 node scripts/smoke_test.mjs
 ```
 
-### Paso 5 — Configura tu cliente IA
+### Step 5 — Configure your AI client
 
-Elige **uno** (o los tres — mismo `index.js` sirve para todos):
+Pick **one** (or all three — same `index.js` works everywhere):
 
-| Cliente | Archivo de config | Comando |
+| Client | Config file | Command |
 |---|---|---|
 | **OpenCode** | `~/.config/opencode/opencode.json` | `node /.../Xcode-MPC/index.js` |
 | **Codex** | `~/.codex/config.toml` | `[mcp_servers.xcode] command="node"` |
-| **Claude Code** | `claude mcp add xcode -- node ...` | CLI o `.mcp.json` |
+| **Claude Code** | `claude mcp add xcode -- node ...` | CLI or `.mcp.json` |
 
-Detalles completos paso a paso con JSON/TOML copiable:
+Full step-by-step with copy-paste JSON/TOML:
 
 - 📘 **[OpenCode → docs/opencode.md](docs/opencode.md)**
 - 📗 **[Codex → docs/codex.md](docs/codex.md)**
 - 📙 **[Claude Code → docs/claude-code.md](docs/claude-code.md)**
 
-### Paso 6 — Reinicia y prueba
+### Step 6 — Restart and test
 
-Reinicia OpenCode / Codex / Claude Code y escribe:
-
-```
-lista las herramientas de xcode
-```
-
-Debes ver **25 herramientas** y en el log:
+Restart OpenCode / Codex / Claude Code and type:
 
 ```
-✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas
+list the xcode tools
 ```
 
-¡Listo! Ya puedes decir:
+You should see **25 tools** and in the log:
 
 ```
-Compila MyApp con xcode_build scheme MyApp destination "platform=iOS Simulator,name=iPhone 15"
+✅ Xcode MCP Server started (stdio) — 25 tools registered
+```
+
+Done! Now you can say:
+
+```
+Build MyApp with xcode_build scheme MyApp destination "platform=iOS Simulator,name=iPhone 15"
 ```
 
 ---
 
-## ✅ Verificación
+## ✅ Verification
 
 ```bash
-# 1. Sintaxis
+# 1. Syntax
 make lint
 
-# 2. Smoke MCP (sin Xcode necesario, solo Node)
+# 2. Smoke MCP (no Xcode needed, just Node)
 make test
 
-# 3. Entorno Apple
+# 3. Apple environment
 make doctor
-# Verifica: node, yarn, xcodebuild, xcrun, simctl, swiftlint, security, osascript
+# Checks: node, yarn, xcodebuild, xcrun, simctl, swiftlint, security, osascript
 
-# 4. Inspector visual (opcional)
+# 4. Visual inspector (optional)
 make inspect
-# o
+# or
 yarn inspect
-# Abre http://localhost:6274 → tools/list → tools/call
+# Open http://localhost:6274 → tools/list → tools/call
 ```
 
 ---
 
-## 🔧 Uso con OpenCode / Codex / Claude Code
+## 🔧 Usage with OpenCode / Codex / Claude Code
 
 ### OpenCode
 
@@ -283,12 +285,12 @@ args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
 
 ```bash
 claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
-# verifica
+# verify
 claude mcp list
 # xcode: connected — 25 tools
 ```
 
-O por proyecto con `.mcp.json`:
+Or per-project with `.mcp.json`:
 
 ```json
 {
@@ -301,15 +303,15 @@ O por proyecto con `.mcp.json`:
 }
 ```
 
-> Ejemplos de prompts para cada cliente → [`docs/opencode.md`](docs/opencode.md) · [`docs/codex.md`](docs/codex.md) · [`docs/claude-code.md`](docs/claude-code.md) · Plantillas: [`.mcp.json.example`](.mcp.json.example) · [`.codex-config.toml.example`](.codex-config.toml.example)
+> Prompt examples for each client → [`docs/opencode.md`](docs/opencode.md) · [`docs/codex.md`](docs/codex.md) · [`docs/claude-code.md`](docs/claude-code.md) · Templates: [`.mcp.json.example`](.mcp.json.example) · [`.codex-config.toml.example`](.codex-config.toml.example)
 
 ---
 
-## 🛠️ Herramientas (25)
+## 🛠️ Tools (25)
 
-### 1. Compilación, Diagnóstico y Limpieza
+### 1. Build, Diagnostics & Clean
 
-| Herramienta | `xcrun` / `xcodebuild` | Args clave |
+| Tool | `xcrun` / `xcodebuild` | Key args |
 |---|---|---|
 | `xcode_build` | `xcodebuild build` | `scheme*`, `workspace`, `project`, `destination`, `configuration` |
 | `xcode_clean` | `xcodebuild clean` + `rm -rf DerivedData` | `purgeDerivedData:boolean` |
@@ -318,135 +320,135 @@ O por proyecto con `.mcp.json`:
 | `xcode_archive_export` | `archive` + `-exportArchive` | `scheme*`, `exportOptionsPlist*`, `archivePath`, `exportPath` |
 | `swift_format_lint` | `swift-format` → `swiftlint` | `path`, `mode: lint|format`, `tool: auto` |
 
-### 2. Tests y Cobertura
+### 2. Tests & Coverage
 
-| Herramienta | `xcodebuild` | Args clave |
+| Tool | `xcodebuild` | Key args |
 |---|---|---|
 | `xcode_run_tests` | `xcodebuild test` | `scheme*`, `destination*`, `onlyTesting`, `enableCodeCoverage` |
-| `xcode_test_coverage` | `xcrun xccov view --report --json` | `xcresultPath` (auto busca en DerivedData) |
+| `xcode_test_coverage` | `xcrun xccov view --report --json` | `xcresultPath` (auto-finds in DerivedData) |
 
-### 3. Simuladores `xcrun simctl` (9)
+### 3. Simulators `xcrun simctl` (9)
 
-`simctl_list` (filtro `booted`), `simctl_lifecycle` (`boot|shutdown|erase`), `simctl_install_launch`, `simctl_media_capture` (`screenshot|record`), `simctl_push_notification`, `simctl_location_mock`, `simctl_privacy_control`, `simctl_ui_appearance` (`light|dark`), `simctl_open_url`
+`simctl_list` (filter `booted`), `simctl_lifecycle` (`boot|shutdown|erase`), `simctl_install_launch`, `simctl_media_capture` (`screenshot|record`), `simctl_push_notification`, `simctl_location_mock`, `simctl_privacy_control`, `simctl_ui_appearance` (`light|dark`), `simctl_open_url`
 
-### 4. Dispositivos físicos `xcrun devicectl` (2)
+### 4. Physical Devices `xcrun devicectl` (2)
 
 `devicectl_list` (`--json`), `devicectl_logs` (`deviceUdid*`, `durationSeconds`)
 
-### 5. Perfilado `xcrun xctrace` (1)
+### 5. Profiling `xcrun xctrace` (1)
 
 `xctrace_profile` (`template: Time Profiler|Allocations|Leaks|System Trace`, `timeLimitSeconds`, `outputFilePath*`)
 
-### 6. Versiones y Seguridad (2)
+### 6. Versions & Security (2)
 
 `agvtool_version_bump` (`bump_build|set_version|set_build`), `xcode_certificates_check` (`security find-identity`)
 
-### 7. Editor GUI Xcode (2)
+### 7. Xcode GUI Editor (2)
 
 `xcode_get_active_file` (AppleScript `osascript`), `xcode_open_at_line` (`filePath*`, `line*`, `column` — `xed` → `xcode://`)
 
-### 8. Localización (1)
+### 8. Localization (1)
 
 `xcode_sync_strings` (`.xcstrings` → `missing` / `pendingTranslation` / `emptyValues`)
 
-> Referencia completa con JSON Schema + ejemplos copiables → [`docs/tools.md`](docs/tools.md)
+> Full reference with JSON Schema + copy-paste examples → [`docs/tools.md`](docs/tools.md)
 
 ---
 
-## 📖 Comandos Make
+## 📖 Make Commands
 
 ```bash
-make help          # Muestra esta ayuda bonita (colores)
+make help          # Show this pretty help (colors)
 make install       # yarn install + chmod +x
-make reinstall     # clean + install (desde cero)
+make reinstall     # clean + install (from scratch)
 make lint          # node --check index.js
-make doctor        # Verifica Node/Yarn/Xcode/simctl/swiftlint/osascript
+make doctor        # Check Node/Yarn/Xcode/simctl/swiftlint/osascript
 make test          # Smoke test MCP (25 tools + 2 calls)
 make start         # yarn start (stdio)
 make dev           # yarn dev (--watch)
-make inspect       # Inspector MCP en http://localhost:6274
-make clean         # Borra node_modules/.yarn/cache/build
-make fmt           # prettier si está disponible
+make inspect       # MCP Inspector at http://localhost:6274
+make clean         # Remove node_modules/.yarn/cache/build
+make fmt           # prettier if available
 make release VERSION=1.0.1  # bump + tag + push
 ```
 
-Detalles → [`docs/development.md`](docs/development.md)
+Details → [`docs/development.md`](docs/development.md)
 
 ---
 
-## 📚 Documentación
+## 📚 Documentation
 
-| Doc | Para quién | Qué cubre |
+| Doc | Audience | Covers |
 |---|---|---|
-| [`installation.md`](docs/installation.md) | Todos | Yarn Berry, Corepack, `yarnPath` vendorizado, troubleshooting |
-| [`tools.md`](docs/tools.md) | LLM / Dev | Las 25 tools, JSON Schema, ejemplos JSON listos para copiar |
-| [`opencode.md`](docs/opencode.md) | OpenCode | `opencode.json` global/local, prompts, env `DEVELOPER_DIR` |
+| [`installation.md`](docs/installation.md) | Everyone | Yarn Berry, Corepack, `yarnPath` vendored, troubleshooting |
+| [`tools.md`](docs/tools.md) | LLM / Dev | All 25 tools, JSON Schema, copy-paste JSON examples |
+| [`opencode.md`](docs/opencode.md) | OpenCode | `opencode.json` global/local, prompts, `DEVELOPER_DIR` env |
 | [`codex.md`](docs/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
-| [`claude-code.md`](docs/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
-| [`development.md`](docs/development.md) | Contribuidores | Estructura, cómo añadir tool, CI, release |
-| [`architecture.md`](docs/architecture.md) | Curiosos | Por qué single-file, helpers, dispatcher, flujo stdio |
+| [`claude-code.md`](docs/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permissions, trust |
+| [`development.md`](docs/development.md) | Contributors | Structure, adding a tool, CI, release |
+| [`architecture.md`](docs/architecture.md) | Curious | Why single-file, helpers, dispatcher, stdio flow |
 
 ---
 
-## 🧪 Smoke test manual
+## 🧪 Manual Smoke Test
 
 ```bash
-# Sin Make:
+# Without Make:
 python3 scripts/smoke_test.py
-# STDERR: ✅ Xcode MCP Server iniciado — 25 herramientas
-# ✓ tools/list: 25 herramientas
+# STDERR: ✅ Xcode MCP Server started — 25 tools
+# ✓ tools/list: 25 tools
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 
-# Con Make:
+# With Make:
 make test
 ```
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
 ```
-index.js (1220 líneas, 1 archivo)
+index.js (1220 lines, 1 file)
 ├── Shebang + Imports (MCP SDK, promisify(exec), fs, path, os)
 ├── Helpers: shellEscape, expandTilde, runCommand (try/catch + 10MB buffer), formatResult
-├── TOOLS[25]: JSON Schema estricto (additionalProperties:false)
-├── Handlers[25]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
+├── TOOLS[25]: Strict JSON Schema (additionalProperties:false)
+├── Handlers[25]: async handle_* with validation + fallbacks (xed→xcode://, swift-format→swiftlint)
 ├── Dispatcher: HANDLERS map + ListTools/CallTool (try/catch → isError:true)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```
 
-Ver [`docs/architecture.md`](docs/architecture.md) para decisión single-file, flujo `OpenCode → stdin → handler → xcrun → stdout`.
+See [`docs/architecture.md`](docs/architecture.md) for single-file decision, `OpenCode → stdin → handler → xcrun → stdout` flow.
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
 ```bash
-# 1. Fork y branch
-git checkout -b feat/mi-herramienta
+# 1. Fork and branch
+git checkout -b feat/my-tool
 
-# 2. Desarrolla: añade en TOOLS + Handler + HANDLERS en index.js
+# 2. Develop: add to TOOLS + Handler + HANDLERS in index.js
 make install && make lint && make test
 
-# 3. Documenta en docs/tools.md + README.md
+# 3. Document in docs/tools.md + README.md
 
 # 4. PR
 ```
 
 Issues: [Bug Report](.github/ISSUE_TEMPLATE/bug_report.md) · [Feature Request](.github/ISSUE_TEMPLATE/feature_request.md) · [PR Template](.github/pull_request_template.md)
 
-CI corre en `macos-14` y `ubuntu-latest` — tu PR se testea automático.
+CI runs on `macos-14` and `ubuntu-latest` — your PR is tested automatically.
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-MIT © [YanxReal](https://github.com/YanxReal) — ver [LICENSE](LICENSE).
+MIT © [YanxReal](https://github.com/YanxReal) — see [LICENSE](LICENSE).
 
 ---
 
-## 🔗 Enlaces
+## 🔗 Links
 
 - **Repo:** https://github.com/YanxReal/Xcode-MPC
 - **MCP Spec:** https://modelcontextprotocol.io
@@ -456,8 +458,8 @@ MIT © [YanxReal](https://github.com/YanxReal) — ver [LICENSE](LICENSE).
 
 <div align="center">
 
-**Hecho con ❤️ para el ecosistema Apple · Yarn 4 + Make + CI + Docs**
+**Made with ❤️ for the Apple ecosystem · Yarn 4 + Make + CI + Docs**
 
-*Si te sirve, deja ⭐ en GitHub*
+*If it helps you, leave a ⭐ on GitHub*
 
 </div>
