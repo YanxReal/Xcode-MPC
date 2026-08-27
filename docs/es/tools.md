@@ -1,4 +1,4 @@
-# Referencia de Herramientas (25)
+# Referencia de Herramientas (31)
 
 > 🌐 **Idioma:** [English](../tools.md) | **Español**
 
@@ -235,6 +235,46 @@ Parsea String Catalog (`sourceLanguage`, `strings[].localizations[lang].stringUn
   "emptyValues": { "fr": ["hello"] }
 }
 ```
+
+---
+
+## 9. Assets `Assets.xcassets` + `actool` (6 herramientas)
+
+### `asset_list_contents`
+```json
+{ "xcassetsPath": "/ruta/a/Assets.xcassets" }
+```
+`fs.readdir` recursivo, filtra `*.colorset|*.imageset|*.appiconset|*.symbolset|*.dataset` y retorna `{name, type, relativePath, absolutePath}` ordenado. Valida que sea directorio `.xcassets`.
+
+### `asset_manage_color`
+```json
+{ "xcassetsPath": "/ruta/a/Assets.xcassets", "name": "Primary", "hexLight": "#FF5733", "hexDark": "#900C3F" }
+```
+Crea `${name}.colorset/Contents.json` con componentes `sRGB` vía `hexToRgbFloat` (`#RRGGBB` → `0.000–1.000`). Light como `universal`, Dark como `universal` + `appearances: [{luminance: dark}]`. Soporta `#RRGGBBAA`.
+
+### `asset_manage_image`
+```json
+{ "xcassetsPath": "/ruta/a/Assets.xcassets", "name": "Logo", "imagePath1x": "/tmp/a.png", "imagePath2x": "/tmp/a@2x.png", "isVector": false }
+```
+Crea `${name}.imageset`. Para bitmap: copia a `Logo_1x.png` etc. con `scale: 1x/2x/3x`. Para vector (`isVector:true`): copia único como `Logo.pdf/svg` con `properties: {preserves-vector-representation:true}`.
+
+### `asset_read_info`
+```json
+{ "assetPath": "/ruta/a/Assets.xcassets/Primary.colorset" }
+```
+Lee `Contents.json` (o el archivo directo si es path directo). Valida JSON y retorna contenido crudo.
+
+### `asset_delete`
+```json
+{ "assetPath": "/ruta/a/Assets.xcassets/Logo.imageset" }
+```
+Borrado seguro: valida extensión `*.colorset|*.imageset|...` y que esté dentro de `.xcassets`, luego `fs.rm -rf`.
+
+### `asset_validate_actool`
+```json
+{ "xcassetsPath": "/ruta/a/Assets.xcassets", "platform": "iphoneos" }
+```
+`xcrun actool "${xcassetsPath}" --compile /tmp/actool_out --platform iphoneos --minimum-deployment-target 15.0 --output-format human-readable-text`. Retorna resultado `Assets.car` + `✅` o `⚠️` advertencias. Valida imágenes faltantes, nombres duplicados.
 
 ---
 

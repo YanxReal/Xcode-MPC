@@ -135,6 +135,23 @@ async function xcrunExists(tool) {
   return r.success && !!r.stdout;
 }
 
+function hexToRgbFloat(hex) {
+  const clean = String(hex).replace(/^#/, "").trim();
+  if (!/^[0-9a-fA-F]{6}$/.test(clean) && !/^[0-9a-fA-F]{8}$/.test(clean)) {
+    throw new Error(`HEX inválido: ${hex} (esperado #RRGGBB o #RRGGBBAA)`);
+  }
+  const hasAlpha = clean.length === 8;
+  const r = parseInt(clean.substring(0, 2), 16) / 255;
+  const g = parseInt(clean.substring(2, 4), 16) / 255;
+  const b = parseInt(clean.substring(4, 6), 16) / 255;
+  const a = hasAlpha ? parseInt(clean.substring(6, 8), 16) / 255 : 1;
+  return { red: r.toFixed(3), green: g.toFixed(3), blue: b.toFixed(3), alpha: a.toFixed(3) };
+}
+
+function isValidAssetName(name) {
+  return typeof name === "string" && /^[^/\\][^/]*$/.test(name) && !name.includes("..") && name.length <= 100;
+}
+
 // ---------------------------------------------------------------------------
 // Tool definitions (JSON Schema)
 // ---------------------------------------------------------------------------
@@ -530,6 +547,95 @@ const TOOLS = [
         filePath: { type: "string", description: "Ruta al archivo .xcstrings" },
       },
       required: ["filePath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_list_contents",
+    description:
+      "Explora un catálogo Assets.xcassets y retorna la lista completa de assets (.colorset, .imageset, .appiconset, etc.).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xcassetsPath: { type: "string", description: "Ruta absoluta al archivo .xcassets" },
+      },
+      required: ["xcassetsPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_manage_color",
+    description:
+      "Crea o actualiza un Color Set (.colorset) con soporte para hexadecimales y variación Claro/Oscuro (Dark Mode).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xcassetsPath: { type: "string", description: "Ruta absoluta al archivo .xcassets" },
+        name: { type: "string", description: "Nombre del color (ej. 'PrimaryButton')" },
+        hexLight: { type: "string", description: "Color en HEX para modo claro (ej. '#FF5733')" },
+        hexDark: { type: "string", description: "Color en HEX opcional para modo oscuro (ej. '#900C3F')" },
+      },
+      required: ["xcassetsPath", "name", "hexLight"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_manage_image",
+    description:
+      "Crea o actualiza un Image Set (.imageset) con soporte para escalas (1x, 2x, 3x) o gráficos vectoriales (PDF/SVG).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xcassetsPath: { type: "string", description: "Ruta absoluta al archivo .xcassets" },
+        name: { type: "string", description: "Nombre del asset de imagen" },
+        imagePath1x: { type: "string", description: "Ruta local de la imagen 1x o vectorial" },
+        imagePath2x: { type: "string", description: "Ruta local de la imagen 2x (opcional)" },
+        imagePath3x: { type: "string", description: "Ruta local de la imagen 3x (opcional)" },
+        isVector: { type: "boolean", description: "Si es verdadero, configura la imagen como vectorial preservada" },
+      },
+      required: ["xcassetsPath", "name"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_read_info",
+    description: "Lee la configuración JSON exacta (Contents.json) de un asset específico.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        assetPath: { type: "string", description: "Ruta absoluta al .colorset, .imageset o subcarpeta dentro de .xcassets" },
+      },
+      required: ["assetPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_delete",
+    description: "Elimina de forma segura un asset (.colorset, .imageset, etc.) del catálogo.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        assetPath: { type: "string", description: "Ruta absoluta al asset que deseas eliminar" },
+      },
+      required: ["assetPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "asset_validate_actool",
+    description:
+      "Compila y valida el catálogo .xcassets usando actool para detectar imágenes faltantes, errores o advertencias.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xcassetsPath: { type: "string", description: "Ruta absoluta al .xcassets" },
+        platform: {
+          type: "string",
+          description: "Plataforma objetivo: iphoneos, macosx, appletvos (por defecto: iphoneos)",
+          enum: ["iphoneos", "macosx", "appletvos", "watchos", "xros"],
+        },
+      },
+      required: ["xcassetsPath"],
       additionalProperties: false,
     },
   },
@@ -1140,6 +1246,221 @@ async function handle_xcode_sync_strings(args) {
   return textContent(`${summary}\n\nArchivo: ${filePath}\nIdioma fuente: ${sourceLang}\nClaves totales: ${report.totalKeys}\nIdiomas detectados: ${langs.join(", ")}\n\n${JSON.stringify(compact, null, 2)}`);
 }
 
+async function handle_asset_list_contents(args) {
+  const xcassetsPath = expandTilde(args.xcassetsPath);
+  try {
+    await fs.access(xcassetsPath);
+  } catch {
+    return errorContent(`xcassetsPath no existe: ${xcassetsPath}`);
+  }
+  try {
+    const stat = await fs.stat(xcassetsPath);
+    if (!stat.isDirectory() || !xcassetsPath.endsWith(".xcassets")) {
+      return errorContent(`La ruta no es un .xcassets válido: ${xcassetsPath}`);
+    }
+  } catch (e) {
+    return errorContent(`Error al verificar xcassets: ${e.message}`);
+  }
+  try {
+    const entries = await fs.readdir(xcassetsPath, { recursive: true, withFileTypes: true });
+    const assets = entries
+      .filter((e) => e.isDirectory() && /\.(imageset|colorset|appiconset|symbolset|dataset|logoset|complicationset|brandassets|stickerset|spriteatlas)$/.test(e.name))
+      .map((e) => {
+        const parent = e.parentPath || e.path;
+        return {
+          name: e.name,
+          type: path.extname(e.name).replace(".", ""),
+          relativePath: path.relative(xcassetsPath, path.join(parent, e.name)),
+          absolutePath: path.join(parent, e.name),
+        };
+      })
+      .sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    const summary = `Catálogo: ${xcassetsPath}\nTotal assets: ${assets.length}\nTipos: ${[...new Set(assets.map((a) => a.type))].join(", ") || "(vacío)"}`;
+    return textContent(`${summary}\n\n${JSON.stringify(assets, null, 2)}`);
+  } catch (e) {
+    return errorContent(`Falló al listar assets: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_asset_manage_color(args) {
+  const xcassetsPath = expandTilde(args.xcassetsPath);
+  const name = args.name?.trim();
+  const hexLight = args.hexLight?.trim();
+  const hexDark = args.hexDark?.trim() || null;
+  if (!isValidAssetName(name)) return errorContent(`Nombre de color inválido: "${name}" (no uses /, \\, .. y max 100 chars)`);
+  if (!hexLight) return errorContent("hexLight es requerido");
+  let lightComponents, darkComponents;
+  try {
+    lightComponents = hexToRgbFloat(hexLight);
+    if (hexDark) darkComponents = hexToRgbFloat(hexDark);
+  } catch (e) {
+    return errorContent(e.message);
+  }
+  try {
+    await fs.access(xcassetsPath);
+  } catch {
+    return errorContent(`xcassetsPath no existe: ${xcassetsPath}`);
+  }
+  const colorSetDir = path.join(xcassetsPath, `${name}.colorset`);
+  try {
+    await fs.mkdir(colorSetDir, { recursive: true });
+    const colors = [
+      { idiom: "universal", color: { "color-space": "srgb", components: lightComponents } },
+    ];
+    if (darkComponents) {
+      colors.push({
+        idiom: "universal",
+        appearances: [{ appearance: "luminance", value: "dark" }],
+        color: { "color-space": "srgb", components: darkComponents },
+      });
+    }
+    const contents = { colors, info: { author: "xcode", version: 1 } };
+    await fs.writeFile(path.join(colorSetDir, "Contents.json"), JSON.stringify(contents, null, 2), "utf-8");
+    const detail = `Color Set '${name}' configurado en ${colorSetDir}\nLight: ${hexLight} → ${JSON.stringify(lightComponents)}${darkComponents ? `\nDark: ${hexDark} → ${JSON.stringify(darkComponents)}` : ""}`;
+    return textContent(detail + `\n\n${JSON.stringify(contents, null, 2)}`);
+  } catch (e) {
+    return errorContent(`Falló al crear .colorset: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_asset_manage_image(args) {
+  const xcassetsPath = expandTilde(args.xcassetsPath);
+  const name = args.name?.trim();
+  if (!isValidAssetName(name)) return errorContent(`Nombre de imagen inválido: "${name}"`);
+  try {
+    await fs.access(xcassetsPath);
+  } catch {
+    return errorContent(`xcassetsPath no existe: ${xcassetsPath}`);
+  }
+  const imageSetDir = path.join(xcassetsPath, `${name}.imageset`);
+  try {
+    await fs.mkdir(imageSetDir, { recursive: true });
+    const images = [];
+    const copyAndAdd = async (srcPath, scale) => {
+      if (!srcPath) return;
+      const p = expandTilde(srcPath);
+      try {
+        await fs.access(p);
+      } catch {
+        throw new Error(`imagePath ${scale} no existe: ${p}`);
+      }
+      const ext = path.extname(p);
+      if (!ext) throw new Error(`imagePath ${scale} sin extensión: ${p}`);
+      const destName = `${name}_${scale}${ext}`;
+      await fs.copyFile(p, path.join(imageSetDir, destName));
+      images.push({ idiom: "universal", scale, filename: destName });
+    };
+    if (args.isVector) {
+      if (!args.imagePath1x) return errorContent("isVector=true requiere imagePath1x (vector PDF/SVG)");
+      const src = expandTilde(args.imagePath1x);
+      try {
+        await fs.access(src);
+      } catch {
+        return errorContent(`Vector no existe: ${src}`);
+      }
+      const ext = path.extname(src);
+      const destName = `${name}${ext}`;
+      await fs.copyFile(src, path.join(imageSetDir, destName));
+      images.push({ idiom: "universal", filename: destName, scale: "1x" });
+      const contents = {
+        images,
+        info: { author: "xcode", version: 1 },
+        properties: { "preserves-vector-representation": true },
+      };
+      await fs.writeFile(path.join(imageSetDir, "Contents.json"), JSON.stringify(contents, null, 2), "utf-8");
+      return textContent(`Image Set vectorial '${name}' creado en ${imageSetDir}\nArchivo: ${destName} (preserves-vector-representation: true)\n\n${JSON.stringify(contents, null, 2)}`);
+    } else {
+      if (!args.imagePath1x && !args.imagePath2x && !args.imagePath3x) {
+        // Crear placeholder vacío si no se proveen imágenes, pero con estructura válida
+        images.push({ idiom: "universal", scale: "1x" }, { idiom: "universal", scale: "2x" }, { idiom: "universal", scale: "3x" });
+      } else {
+        await copyAndAdd(args.imagePath1x, "1x");
+        await copyAndAdd(args.imagePath2x, "2x");
+        await copyAndAdd(args.imagePath3x, "3x");
+        if (images.length === 0) return errorContent("No se copiaron imágenes: verifica imagePath1x/2x/3x");
+      }
+      const contents = { images, info: { author: "xcode", version: 1 } };
+      await fs.writeFile(path.join(imageSetDir, "Contents.json"), JSON.stringify(contents, null, 2), "utf-8");
+      return textContent(`Image Set '${name}' creado/actualizado en ${imageSetDir}\nImágenes: ${images.map((i) => `${i.scale || "1x"}:${i.filename || "(vacío)"}`).join(", ")}\n\n${JSON.stringify(contents, null, 2)}`);
+    }
+  } catch (e) {
+    return errorContent(`Falló al manejar .imageset: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_asset_read_info(args) {
+  const assetPath = expandTilde(args.assetPath);
+  try {
+    await fs.access(assetPath);
+  } catch {
+    return errorContent(`assetPath no existe: ${assetPath}`);
+  }
+  try {
+    const stat = await fs.stat(assetPath);
+    const jsonPath = stat.isDirectory() ? path.join(assetPath, "Contents.json") : assetPath;
+    const data = await fs.readFile(jsonPath, "utf-8");
+    // Validar que es JSON
+    try {
+      JSON.parse(data);
+    } catch (e) {
+      return errorContent(`Contents.json no es JSON válido: ${e.message}\nRuta: ${jsonPath}`);
+    }
+    return textContent(`Asset: ${assetPath}\nContents.json: ${jsonPath}\n\n${data}`);
+  } catch (e) {
+    return errorContent(`Falló al leer asset: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_asset_delete(args) {
+  const assetPath = expandTilde(args.assetPath);
+  // Seguridad: debe estar dentro de un .xcassets y terminar en extensión conocida
+  if (!/\.(colorset|imageset|appiconset|symbolset|dataset|logoset|complicationset|brandassets|stickerset|spriteatlas)$/.test(assetPath)) {
+    return errorContent(`assetPath debe terminar en .colorset/.imageset/etc.: ${assetPath}`);
+  }
+  if (!assetPath.includes(".xcassets")) {
+    return errorContent(`assetPath debe estar dentro de un .xcassets: ${assetPath}`);
+  }
+  try {
+    await fs.access(assetPath);
+  } catch {
+    return errorContent(`assetPath no existe: ${assetPath}`);
+  }
+  try {
+    await fs.rm(assetPath, { recursive: true, force: true });
+    return textContent(`✅ Asset eliminado: ${assetPath}`);
+  } catch (e) {
+    return errorContent(`Falló al eliminar asset: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_asset_validate_actool(args) {
+  const xcassetsPath = expandTilde(args.xcassetsPath);
+  const platform = args.platform || "iphoneos";
+  try {
+    await fs.access(xcassetsPath);
+  } catch {
+    return errorContent(`xcassetsPath no existe: ${xcassetsPath}`);
+  }
+  const outDir = path.join(os.tmpdir(), `actool_out_${Date.now()}`);
+  try {
+    await fs.mkdir(outDir, { recursive: true });
+  } catch {}
+  const cmd = `xcrun actool ${shellEscape(xcassetsPath)} --compile ${shellEscape(outDir)} --platform ${shellEscape(platform)} --minimum-deployment-target 15.0 --output-format human-readable-text 2>&1`;
+  const result = await runCommand(cmd);
+  const text = formatResult(`🔍 actool validate (${platform})`, result);
+  // actool sale con 0 si ok, aunque advierta; tratar warnings como éxito pero reportar
+  await fs.rm(outDir, { recursive: true, force: true }).catch(() => {});
+  if (!result.success && result.stderr.includes("command not found")) {
+    return errorContent("xcrun actool no encontrado (¿Xcode instalado?)", text);
+  }
+  if (!result.success) return errorContent(`actool reportó errores para ${xcassetsPath} (${platform})`, text);
+  // Si stdout vacío, es éxito silencioso
+  if (!result.stdout && !result.stderr) return textContent(text + "\n\n✅ Validación completada sin errores ni advertencias.");
+  // Detectar warnings en salida
+  const hasWarnings = /warning|error/i.test(result.stdout + result.stderr);
+  return textContent(text + (hasWarnings ? "\n\n⚠️ Revisa advertencias arriba." : "\n\n✅ Validación completada sin errores."));
+}
+
 // ---------------------------------------------------------------------------
 // Dispatcher
 // ---------------------------------------------------------------------------
@@ -1170,6 +1491,12 @@ const HANDLERS = {
   xcode_get_active_file: handle_xcode_get_active_file,
   xcode_open_at_line: handle_xcode_open_at_line,
   xcode_sync_strings: handle_xcode_sync_strings,
+  asset_list_contents: handle_asset_list_contents,
+  asset_manage_color: handle_asset_manage_color,
+  asset_manage_image: handle_asset_manage_image,
+  asset_read_info: handle_asset_read_info,
+  asset_delete: handle_asset_delete,
+  asset_validate_actool: handle_asset_validate_actool,
 };
 
 // ---------------------------------------------------------------------------
@@ -1179,7 +1506,7 @@ const HANDLERS = {
 const server = new Server(
   {
     name: "xcode-mcp-server",
-    version: "1.0.0",
+    version: "1.1.0",
   },
   {
     capabilities: {
@@ -1211,7 +1538,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas");
+  console.error("✅ Xcode MCP Server iniciado (stdio) — 31 herramientas registradas");
 }
 
 main().catch((err) => {

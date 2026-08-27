@@ -1,4 +1,4 @@
-# Tools Reference (25)
+# Tools Reference (31)
 
 > 🌐 **Language:** **English** | [Español](es/tools.md)
 
@@ -235,6 +235,46 @@ Parses String Catalog (`sourceLanguage`, `strings[].localizations[lang].stringUn
   "emptyValues": { "fr": ["hello"] }
 }
 ```
+
+---
+
+## 9. Assets `Assets.xcassets` + `actool` (6 tools)
+
+### `asset_list_contents`
+```json
+{ "xcassetsPath": "/path/to/Assets.xcassets" }
+```
+`fs.readdir` recursive, filters `*.colorset|*.imageset|*.appiconset|*.symbolset|*.dataset` and returns `{name, type, relativePath, absolutePath}` sorted. Validates `.xcassets` directory.
+
+### `asset_manage_color`
+```json
+{ "xcassetsPath": "/path/to/Assets.xcassets", "name": "Primary", "hexLight": "#FF5733", "hexDark": "#900C3F" }
+```
+Creates `${name}.colorset/Contents.json` with `sRGB` components via `hexToRgbFloat` (`#RRGGBB` → `0.000–1.000`). Light as `universal`, Dark as `universal` + `appearances: [{luminance: dark}]`. Supports `#RRGGBBAA`.
+
+### `asset_manage_image`
+```json
+{ "xcassetsPath": "/path/to/Assets.xcassets", "name": "Logo", "imagePath1x": "/tmp/a.png", "imagePath2x": "/tmp/a@2x.png", "isVector": false }
+```
+Creates `${name}.imageset`. For bitmap: copies to `Logo_1x.png` etc. with `scale: 1x/2x/3x`. For vector (`isVector:true`): copies single file as `Logo.pdf/svg` with `properties: {preserves-vector-representation:true}`.
+
+### `asset_read_info`
+```json
+{ "assetPath": "/path/to/Assets.xcassets/Primary.colorset" }
+```
+Reads `Contents.json` (or file itself if direct). Validates JSON and returns raw content.
+
+### `asset_delete`
+```json
+{ "assetPath": "/path/to/Assets.xcassets/Logo.imageset" }
+```
+Safe delete: validates `*.colorset|*.imageset|...` extension and `.xcassets` containment, then `fs.rm -rf`.
+
+### `asset_validate_actool`
+```json
+{ "xcassetsPath": "/path/to/Assets.xcassets", "platform": "iphoneos" }
+```
+`xcrun actool "${xcassetsPath}" --compile /tmp/actool_out --platform iphoneos --minimum-deployment-target 15.0 --output-format human-readable-text`. Returns `Assets.car` result + `✅` or `⚠️` warnings. Validates missing images, duplicate names.
 
 ---
 
