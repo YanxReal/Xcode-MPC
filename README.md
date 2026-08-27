@@ -1,6 +1,6 @@
 # Xcode MCP Server
 
-> Servidor **Model Context Protocol (MCP)** completo, robusto y modular en un solo archivo `index.js` que conecta **OpenCode** con **Xcode y el entorno Apple** (xcodebuild, simctl, devicectl, xctrace, agvtool, swift-format).
+> Servidor **Model Context Protocol (MCP)** completo, robusto y modular en un solo archivo `index.js` que conecta **OpenCode, Codex y Claude Code** con **Xcode y el entorno Apple** (xcodebuild, simctl, devicectl, xctrace, agvtool, swift-format).
 
 [![CI](https://github.com/YanxReal/Xcode-MPC/actions/workflows/ci.yml/badge.svg)](https://github.com/YanxReal/Xcode-MPC/actions)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js)](https://nodejs.org)
@@ -72,7 +72,9 @@ make reinstall && make lint && make test
 
 ---
 
-## 🔧 Uso con OpenCode
+## 🔧 Uso con OpenCode / Codex / Claude Code
+
+### OpenCode
 
 Añade el servidor a tu `opencode.json` (global `~/.config/opencode/opencode.json` o local `./opencode.json`):
 
@@ -88,22 +90,35 @@ Añade el servidor a tu `opencode.json` (global `~/.config/opencode/opencode.jso
 }
 ```
 
-Alternativa con Yarn:
+> Guía completa en [`docs/opencode.md`](docs/opencode.md).
 
-```json
-{
-  "mcpServers": {
-    "xcode": {
-      "command": "yarn",
-      "args": ["--cwd", "/ruta/a/Xcode-MPC", "start"]
-    }
-  }
-}
+### Codex (OpenAI)
+
+En `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.xcode]
+command = "node"
+args = ["/ruta/absoluta/a/Xcode-MPC/index.js"]
 ```
 
-Reinicia OpenCode y verifica que aparecen las 25 herramientas (`xcode_build`, `simctl_list`, …).
+> Guía completa en [`docs/codex.md`](docs/codex.md).
 
-> Ver guía completa en [`docs/opencode.md`](docs/opencode.md).
+### Claude Code (Anthropic)
+
+```bash
+claude mcp add xcode -- node /ruta/absoluta/a/Xcode-MPC/index.js
+# o por proyecto con .mcp.json
+```
+
+```json
+// .mcp.json
+{ "mcpServers": { "xcode": { "command": "node", "args": ["/ruta/absoluta/a/Xcode-MPC/index.js"] } } }
+```
+
+> Guía completa en [`docs/claude-code.md`](docs/claude-code.md).
+
+Reinicia tu cliente y verifica que aparecen las **25 herramientas** (`xcode_build`, `simctl_list`, …) con log `✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas` en stderr.
 
 ---
 
@@ -182,7 +197,9 @@ Ver [`docs/development.md`](docs/development.md).
 |---|---|
 | [`docs/installation.md`](docs/installation.md) | Instalación paso a paso, Yarn Berry, Corepack |
 | [`docs/tools.md`](docs/tools.md) | Referencia completa de las 25 herramientas + JSON Schema |
-| [`docs/opencode.md`](docs/opencode.md) | Integración con OpenCode, ejemplos de prompts |
+| [`docs/opencode.md`](docs/opencode.md) | Integración con **OpenCode**, ejemplos de prompts |
+| [`docs/codex.md`](docs/codex.md) | Integración con **Codex (OpenAI)** vía `config.toml` |
+| [`docs/claude-code.md`](docs/claude-code.md) | Integración con **Claude Code (Anthropic)** vía `claude mcp` / `.mcp.json` |
 | [`docs/development.md`](docs/development.md) | Flujo de desarrollo, Make, CI, release |
 | [`docs/architecture.md`](docs/architecture.md) | Arquitectura single-file, helpers, manejo de errores |
 

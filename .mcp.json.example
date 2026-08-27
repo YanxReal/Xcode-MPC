@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "xcode": {
+      "command": "node",
+      "args": ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"],
+      "env": {}
+    }
+  }
+}

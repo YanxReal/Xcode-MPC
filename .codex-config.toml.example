@@ -1,0 +1,15 @@
+# Copia a ~/.codex/config.toml o ./.codex/config.toml
+# Codex (OpenAI) — MCP servers
+
+[mcp_servers.xcode]
+command = "node"
+args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
+
+# Alternativa con Yarn:
+# [mcp_servers.xcode]
+# command = "yarn"
+# args = ["--cwd", "/Users/YanxReal/Dev/Tools/Xcode-MPC", "start"]
+
+# Env opcional:
+# [mcp_servers.xcode.env]
+# DEVELOPER_DIR = "/Applications/Xcode.app/Contents/Developer"
