@@ -59,7 +59,7 @@ build the MyApp scheme in Debug
 list booted simulators
 ```
 
-You should see 25 registered tools (`xcode_build`, `simctl_list`, …) and the log `✅ Xcode MCP Server started (stdio) — 25 tools registered` on stderr.
+You should see 25 registered tools (`xcode_build`, `simctl_list`, …) and the log `✅ Xcode MCP Server started (stdio) — 43 tools registered` on stderr.
 
 ## Prompt Examples
 

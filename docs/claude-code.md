@@ -28,7 +28,7 @@ claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 
 # Verify
 claude mcp list
-# xcode: node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js (connected) — 25 tools
+# xcode: node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js (connected) — 43 tools
 
 # If you need project scope (only this repo)
 # claude mcp add xcode --scope project -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
@@ -94,7 +94,7 @@ make lint && make test
 claude mcp list
 claude mcp get xcode
 
-# Should show: 25 tools (xcode_build, simctl_list, etc.)
+# Should show: 43 tools (xcode_build, simctl_list, etc.)
 
 # 3. Inside Claude Code, try:
 # "What Xcode tools do you have?"
@@ -193,4 +193,4 @@ If you use `.mcp.json` in a shared repo, every collaborator needs `node` and `Xc
 | **Codex** | `~/.codex/config.toml` (`mcp_servers`) | `node /.../index.js` |
 | **Claude Code** | `claude mcp add` / `.mcp.json` (`mcpServers`) | `claude mcp add xcode -- node ...` |
 
-All use the same `index.js` stdio — same `tools/list` (25 tools). See also: [`opencode.md`](opencode.md) · [`codex.md`](codex.md) · [`tools.md`](tools.md)
+All use the same `index.js` stdio — same `tools/list` (43 tools). See also: [`opencode.md`](opencode.md) · [`codex.md`](codex.md) · [`tools.md`](tools.md)

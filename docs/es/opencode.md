@@ -59,7 +59,7 @@ compila el scheme MyApp en Debug
 lista simuladores booted
 ```
 
-Debes ver 25 herramientas registradas (`xcode_build`, `simctl_list`, …) y el log `✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas` en stderr.
+Debes ver 43 herramientas registradas (`xcode_build`, `simctl_list`, …) y el log `✅ Xcode MCP Server iniciado (stdio) — 43 herramientas registradas` en stderr.
 
 ## Ejemplos de prompts
 

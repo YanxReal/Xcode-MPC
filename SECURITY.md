@@ -60,7 +60,7 @@ We use **CVSS 3.1** for severity. You can track progress via the private advisor
 
 **In scope:**
 
-- `index.js` — MCP server, all 25 tools (`xcode_build`, `simctl_*`, `devicectl_*`, `xctrace_profile`, `agvtool_version_bump`, `xcode_get_active_file`, `xcode_sync_strings`, etc.)
+- `index.js` — MCP server, all 43 tools (`xcode_build`, `simctl_*`, `devicectl_*`, `xctrace_profile`, `agvtool_version_bump`, `xcode_get_active_file`, `xcode_sync_strings`, etc.)
 - Helpers: `shellEscape` (`index.js:25`), `runCommand` (`index.js:39`), `expandTilde`, `findLatestXcresult`
 - Dependency supply chain: `@modelcontextprotocol/sdk`, `yarn.lock` / `.yarn/releases`
 - Build / CI: `Makefile`, `.github/workflows/ci.yml`, `scripts/smoke_test.py`
@@ -119,7 +119,7 @@ Incluye: archivo/línea (`index.js:39`), tool MCP, `arguments` JSON, logs, `node
 
 ### Alcance
 
-En alcance: `index.js` y las 25 tools, helpers `shellEscape`/`runCommand`, `yarn.lock`, `Makefile`, `ci.yml`, plantillas `opencode.json`/`config.toml`/`.mcp.json`.
+En alcance: `index.js` y las 43 tools, helpers `shellEscape`/`runCommand`, `yarn.lock`, `Makefile`, `ci.yml`, plantillas `opencode.json`/`config.toml`/`.mcp.json`.
 
 Fuera de alcance: vulnerabilidades del propio Apple (`xcodebuild`/`simctl`) — repórtalas a Apple.
 

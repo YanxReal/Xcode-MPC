@@ -15,7 +15,7 @@
 
 > 🌐 **Idioma:** [English](README.md) | **Español**
 
-[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-25) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
+[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-43) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
 
 </div>
 
@@ -32,7 +32,7 @@
 <details>
 <summary><strong>¿Por qué este servidor y no otro?</strong></summary>
 
-- ✅ **Single-file `index.js` (1220 líneas)** — sin build, sin compilar, auditable en 1 archivo. Shebang `#!/usr/bin/env node`, listo para `node`, `yarn start` o `npx`.
+- ✅ **Single-file `index.js` (2250 líneas)** — sin build, sin compilar, auditable en 1 archivo. Shebang `#!/usr/bin/env node`, listo para `node`, `yarn start` o `npx`.
 - ✅ **43 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
 - ✅ **Cobertura Apple total:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
 - ✅ **DX moderna:** Yarn 4 vendorizado (`.yarn/releases`), `Makefile` con `help` autodocumentado, `docs/` modular, CI macOS + `make test` smoke.
@@ -66,7 +66,7 @@
 2. [Instalación paso a paso](#-instalación-paso-a-paso)
 3. [Verificación](#-verificación)
 4. [Uso con OpenCode / Codex / Claude Code](#-uso-con-opencode--codex--claude-code)
-5. [Herramientas (25)](#-herramientas-25)
+5. [Herramientas (43)](#-herramientas-43)
 6. [Comandos Make](#-comandos-make)
 7. [Documentación](#-documentación)
 8. [Arquitectura](#-arquitectura)
@@ -310,7 +310,7 @@ O por proyecto con `.mcp.json`:
 
 ---
 
-## 🛠️ Herramientas (25)
+## 🛠️ Herramientas (43)
 
 ### 1. Compilación, Diagnóstico y Limpieza
 
@@ -424,11 +424,11 @@ make test
 ## 🏗️ Arquitectura
 
 ```
-index.js (1220 líneas, 1 archivo)
+index.js (2250 líneas, 1 archivo)
 ├── Shebang + Imports (MCP SDK, promisify(exec), fs, path, os)
 ├── Helpers: shellEscape, expandTilde, runCommand (try/catch + 10MB buffer), formatResult
-├── TOOLS[25]: JSON Schema estricto (additionalProperties:false)
-├── Handlers[25]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
+├── TOOLS[43]: JSON Schema estricto (additionalProperties:false)
+├── Handlers[43]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
 ├── Dispatcher: HANDLERS map + ListTools/CallTool (try/catch → isError:true)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```

@@ -4,7 +4,7 @@
 
 ## Single-file MCP Server
 
-`index.js` (1220 lines) is intentionally **monolithic** to simplify distribution with OpenCode (copy one file + `yarn install`).
+`index.js` (2250 lines) is intentionally **monolithic** to simplify distribution with OpenCode (copy one file + `yarn install`).
 
 ```
 index.js
