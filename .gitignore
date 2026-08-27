@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build / DerivedData
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.trace
+*.xcresult
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Env / Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.p12
+*.mobileprovision
+
+# Editor
+.vscode/
+.idea/
+*.code-workspace
+.opencode/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# Temp
+tmp/
+temp/
+*.tmp

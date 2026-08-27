@@ -1,0 +1,43 @@
+{
+  "name": "xcode-mcp-server",
+  "version": "1.0.0",
+  "description": "Servidor MCP para integración Xcode / Apple Dev Tools con OpenCode — 25 herramientas (xcodebuild, simctl, devicectl, xctrace, agvtool)",
+  "type": "module",
+  "packageManager": "yarn@4.18.0",
+  "bin": "./index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node index.js",
+    "lint": "node --check index.js && echo '✓ lint ok'",
+    "test": "node --test 2>&1 | head -n 50; echo ' smoke test via make test'",
+    "prepare": "chmod +x index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "xcode",
+    "ios",
+    "simctl",
+    "devicectl",
+    "xctrace",
+    "opencode",
+    "apple"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YanxReal/Xcode-MPC.git"
+  },
+  "author": "YanxReal <https://github.com/YanxReal>",
+  "bugs": {
+    "url": "https://github.com/YanxReal/Xcode-MPC/issues"
+  },
+  "homepage": "https://github.com/YanxReal/Xcode-MPC#readme"
+}
