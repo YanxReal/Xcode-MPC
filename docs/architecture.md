@@ -1,20 +1,22 @@
-# Arquitectura
+# Architecture
+
+> 🌐 **Language:** **English** | [Español](es/architecture.md)
 
 ## Single-file MCP Server
 
-`index.js` (1220 líneas) es intencionalmente **monolítico** para facilitar distribución con OpenCode (copiar un archivo + `yarn install`).
+`index.js` (1220 lines) is intentionally **monolithic** to simplify distribution with OpenCode (copy one file + `yarn install`).
 
 ```
 index.js
 ├── Shebang + Imports (MCP SDK, child_process, fs, path, os)
 ├── Helpers (shellEscape, expandTilde, runCommand, formatResult, findLatestXcresult)
-├── TOOLS (25 definiciones JSON Schema)
+├── TOOLS (25 JSON Schema definitions)
 ├── Handlers (25 async functions handle_*)
 ├── Dispatcher (HANDLERS map)
 └── Server (Server + StdioServerTransport + ListTools/CallTool)
 ```
 
-### Imports clave
+### Key Imports
 
 ```js
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -24,41 +26,41 @@ import { exec, spawn } from "child_process";
 import { promisify } from "util";
 ```
 
-`promisify(exec)` ejecuta comandos asíncronos con `maxBuffer:10MB`. `spawn` está importado para extensiones futuras (streaming logs).
+`promisify(exec)` runs async commands with `maxBuffer:10MB`. `spawn` is imported for future extensions (streaming logs).
 
 ### Helpers
 
-- **`shellEscape(arg)`** (`index.js:25`): envuelve en `'...'` y escapa `'`. Evita inyección.
+- **`shellEscape(arg)`** (`index.js:25`): wraps in `'...'` and escapes `'`. Prevents injection.
 - **`expandTilde(p)`** (`index.js:32`): `~/` → `os.homedir()`
-- **`runCommand(cmd, opts)`** (`index.js:39`): `execAsync` con try/catch, retorna `{success, stdout, stderr, code, error, cmd}`. Nunca lanza.
+- **`runCommand(cmd, opts)`** (`index.js:39`): `execAsync` with try/catch, returns `{success, stdout, stderr, code, error, cmd}`. Never throws.
 - **`formatResult(title, result)`** (`index.js:60`): pretty `$ cmd` + `exit:` + `stdout/stderr`
-- **`textContent(text)` / `errorContent(msg, details)`** (`index.js:87`): adaptadores MCP `content` + `isError`
-- **`buildXcodebuildBase({...})`** (`index.js:96`): construye `xcodebuild -workspace/-project -scheme -configuration -destination`
+- **`textContent(text)` / `errorContent(msg, details)`** (`index.js:87`): MCP adapters `content` + `isError`
+- **`buildXcodebuildBase({...})`** (`index.js:96`): builds `xcodebuild -workspace/-project -scheme -configuration -destination`
 - **`findLatestXcresult()`** (`index.js:106`): `find DerivedData -name *.xcresult` + `stat mtimeMs`
 - **`xcrunExists(tool)`** (`index.js:133`): `which swift-format` / `swiftlint`
 
 ### Tools
 
-`TOOLS` array (`index.js:142`) declara cada herramienta con `name`, `description`, `inputSchema` (JSON Schema draft-07, `additionalProperties:false`). OpenCode genera UI a partir de esto.
+`TOOLS` array (`index.js:142`) declares each tool with `name`, `description`, `inputSchema` (JSON Schema draft-07, `additionalProperties:false`). OpenCode generates UI from this.
 
 ### Handlers
 
-Cada handler sigue el patrón:
+Each handler follows the pattern:
 
 ```js
 async function handle_xcode_build(args){
   const cmd = buildXcodebuildBase(args) + " build";
   const result = await runCommand(cmd);
   const text = formatResult("🔨 xcode_build", result);
-  if(!result.success) return errorContent("Falló...", text);
+  if(!result.success) return errorContent("Failed...", text);
   return textContent(text);
 }
 ```
 
-- Validación de args (ej. `latitude` rango, `payloadJson` JSON.parse)
-- `fs.access` / `fs.readFile` para paths
-- Fallbacks (ej. `swift_format_lint` prueba `swift-format` luego `swiftlint`; `xcode_open_at_line` prueba `xed` luego `open xcode://`)
-- `try/catch` global en `server.setRequestHandler(CallTool)` (`index.js:1195`) que captura cualquier throw y retorna `errorContent`.
+- Arg validation (e.g. `latitude` range, `payloadJson` JSON.parse)
+- `fs.access` / `fs.readFile` for paths
+- Fallbacks (e.g. `swift_format_lint` tries `swift-format` then `swiftlint`; `xcode_open_at_line` tries `xed` then `open xcode://`)
+- Global `try/catch` in `server.setRequestHandler(CallTool)` (`index.js:1195`) that catches any throw and returns `errorContent`.
 
 ### Dispatcher
 
@@ -66,9 +68,9 @@ async function handle_xcode_build(args){
 const HANDLERS = { xcode_build: handle_xcode_build, ... };
 server.setRequestHandler(CallToolRequestSchema, async (req)=>{
   const handler = HANDLERS[req.params.name];
-  if(!handler) return errorContent(`Herramienta desconocida`);
+  if(!handler) return errorContent(`Unknown tool`);
   try{ return await handler(req.params.arguments); }
-  catch(e){ return errorContent(`Excepción: ${e.message}`, e.stack); }
+  catch(e){ return errorContent(`Exception: ${e.message}`, e.stack); }
 });
 ```
 
@@ -80,32 +82,32 @@ server.setRequestHandler(ListToolsRequestSchema, async ()=>({tools: TOOLS}));
 await server.connect(new StdioServerTransport());
 ```
 
-Stdio significa: stdin = JSON-RPC, stdout = JSON-RPC, stderr = logs (`✅ Xcode MCP Server iniciado`).
+Stdio means: stdin = JSON-RPC, stdout = JSON-RPC, stderr = logs (`✅ Xcode MCP Server started`).
 
-### Flujo de datos
+### Data Flow
 
 ```
-OpenCode Client
+OpenCode / Codex / Claude Code Client
   ──JSON-RPC tools/call {name, arguments}──> stdin
   Server.dispatch -> handler -> runCommand("xcrun ...") -> stdout/stderr
   <──JSON-RPC result {content:[{type:"text", text}]}── stdout
-  stderr: logs para debug
+  stderr: logs for debug
 ```
 
-### Decisiones de diseño
+### Design Decisions
 
-- **Single-file** para DX OpenCode (sin build step, sin tsc)
-- **Yarn Berry** con `yarnPath` vendorizado para reproducibilidad sin instalación global
-- **Make** como orquestador UX (idempotente, `help` autodocumentado)
-- **`exec` vs `spawn`**: `exec` para comandos cortos con captura completa; `spawn` reservado para streaming (devicectl logs) si se necesita en futuro
-- **No `// TODO`** — implementación completa lista para guardar y ejecutar
+- **Single-file** for OpenCode DX (no build step, no tsc)
+- **Yarn Berry** with vendored `yarnPath` for reproducibility without global install
+- **Make** as UX orchestrator (idempotent, self-documenting `help`)
+- **`exec` vs `spawn`**: `exec` for short commands with full capture; `spawn` reserved for streaming (devicectl logs) if needed later
+- **No `// TODO`** — fully implemented, ready to save and run
 
-### Extensibilidad
+### Extensibility
 
-Para añadir integración HTTP/SSE (Inspector remoto) o tests unitarios:
+To add HTTP/SSE integration (remote Inspector) or unit tests:
 
-- Añadir `src/` modular y bundlear a `index.js` con `esbuild`
-- Añadir `vitest` + `yarn test`
-- Mantener `index.js` como entrypoint generado
+- Add `src/` modular and bundle to `index.js` with `esbuild`
+- Add `vitest` + `yarn test`
+- Keep `index.js` as generated entrypoint
 
-Por ahora, el proyecto prioriza simplicidad single-file.
+For now, the project prioritizes single-file simplicity.

@@ -1,40 +1,42 @@
-# Integración con Claude Code (Anthropic)
+# Claude Code Integration (Anthropic)
 
-> **Claude Code** (`claude` — CLI oficial de Anthropic) soporta MCP vía `claude mcp` y `.mcp.json`. Esta guía integra **Xcode MCP Server** con Claude Code.
+> 🌐 **Language:** **English** | [Español](es/claude-code.md)
 
-## 1. Requisitos
+> **Claude Code** (`claude` — Anthropic's official CLI) supports MCP via `claude mcp` and `.mcp.json`. This guide integrates **Xcode MCP Server** with Claude Code.
 
-- Claude Code instalado: `npm i -g @anthropic-ai/claude-code` o `brew install claude-code`
-- Verificación: `claude --version` / `claude mcp --help`
-- Este repo con `yarn install` y `make test` OK
+## 1. Requirements
 
-## 2. Configuración
+- Claude Code installed: `npm i -g @anthropic-ai/claude-code` or `brew install claude-code`
+- Verify: `claude --version` / `claude mcp --help`
+- This repo with `yarn install` and `make test` OK
 
-Claude Code ofrece 3 formas (elige una):
+## 2. Configuration
 
-### Opción A — CLI `claude mcp add` (recomendada, global)
+Claude Code offers 3 ways (pick one):
+
+### Option A — CLI `claude mcp add` (recommended, global)
 
 ```bash
-# Añade servidor xcode (stdio) — persiste en ~/.claude.json
+# Add xcode server (stdio) — persists in ~/.claude.json
 claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 
-# Con Yarn
+# With Yarn
 # claude mcp add xcode -- yarn --cwd /Users/YanxReal/Dev/Tools/Xcode-MPC start
 
-# Con env (ej. Xcode beta)
+# With env (e.g. Xcode beta)
 # claude mcp add xcode --env DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 
-# Verificar
+# Verify
 claude mcp list
 # xcode: node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js (connected) — 25 tools
 
-# Si necesitas scope proyecto (solo este repo)
+# If you need project scope (only this repo)
 # claude mcp add xcode --scope project -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 ```
 
-### Opción B — `.mcp.json` (por proyecto, commiteable)
+### Option B — `.mcp.json` (per-project, committable)
 
-Crea `.mcp.json` en la raíz de tu app iOS:
+Create `.mcp.json` at the root of your iOS app:
 
 ```json
 {
@@ -48,7 +50,7 @@ Crea `.mcp.json` en la raíz de tu app iOS:
 }
 ```
 
-Ruta relativa al repo:
+Relative path to the repo:
 
 ```json
 {
@@ -61,9 +63,9 @@ Ruta relativa al repo:
 }
 ```
 
-Claude Code lo detecta automáticamente al iniciar en ese directorio. Para permitirlo si usas workspace trust, confirma `Allow` cuando pregunte.
+Claude Code auto-detects it when starting in that directory. For workspace trust, confirm `Allow` when prompted.
 
-### Opción C — `settings` JSON (`~/.claude/settings.json`)
+### Option C — `settings` JSON (`~/.claude/settings.json`)
 
 ```json
 {
@@ -76,119 +78,119 @@ Claude Code lo detecta automáticamente al iniciar en ese directorio. Para permi
 }
 ```
 
-### Opción D — STDIO explícito con `claude mcp add-json`
+### Option D — STDIO explicit with `claude mcp add-json`
 
 ```bash
 claude mcp add-json xcode '{"command":"node","args":["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]}'
 ```
 
-## 3. Verificación
+## 3. Verification
 
 ```bash
-# 1. Lint y smoke
+# 1. Lint and smoke
 make lint && make test
 
-# 2. Listar servidores y herramientas
+# 2. List servers and tools
 claude mcp list
 claude mcp get xcode
 
-# Debe mostrar: 25 tools (xcode_build, simctl_list, etc.)
+# Should show: 25 tools (xcode_build, simctl_list, etc.)
 
-# 3. Dentro de Claude Code, prueba:
-# "¿Qué herramientas de Xcode tienes?"
-# "Compila MyApp con xcode_build"
-# "Lista simuladores booted con simctl_list"
+# 3. Inside Claude Code, try:
+# "What Xcode tools do you have?"
+# "Build MyApp with xcode_build"
+# "List booted simulators with simctl_list"
 ```
 
-Logs van a stderr del servidor. Para debug:
+Logs go to server stderr. For debug:
 
 ```bash
 claude --mcp-debug
-# o
+# or
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node index.js | jq
 ```
 
-## 4. Ejemplos de prompts en Claude Code
+## 4. Prompt Examples in Claude Code
 
-### Compilación
-
-```
-Compila el scheme MyApp en Release para generic/platform=iOS con xcode_build
-```
+### Build
 
 ```
-Analiza el código con xcode_analyze y lista los schemes con xcode_list_schemes
+Build scheme MyApp in Release for generic/platform=iOS with xcode_build
+```
+
+```
+Analyze code with xcode_analyze and list schemes with xcode_list_schemes
 ```
 
 ### Tests
 
 ```
-Corre los tests de MyAppTests en iPhone 15 con xcode_run_tests y extrae el reporte con xcode_test_coverage
+Run MyAppTests on iPhone 15 with xcode_run_tests and extract report with xcode_test_coverage
 ```
 
-### Simuladores (flujo completo)
+### Simulators (full flow)
 
 ```
-Lista simuladores booted con simctl_list.
-Haz boot del iPhone 15 Pro si no está encendido con simctl_lifecycle
-Instala build/Debug-iphonesimulator/MyApp.app con simctl_install_launch y lánzalo
-Toma un screenshot en /tmp/01.png con simctl_media_capture
-Simula ubicación en Madrid con simctl_location_mock y abre myapp://home con simctl_open_url
-Cambia a dark mode con simctl_ui_appearance y concede permiso de cámara con simctl_privacy_control
-Envía una push de prueba con simctl_push_notification
+List booted simulators with simctl_list.
+Boot iPhone 15 Pro if not running with simctl_lifecycle
+Install build/Debug-iphonesimulator/MyApp.app with simctl_install_launch and launch it
+Take a screenshot at /tmp/01.png with simctl_media_capture
+Mock location in Madrid with simctl_location_mock and open myapp://home with simctl_open_url
+Switch to dark mode with simctl_ui_appearance and grant camera permission with simctl_privacy_control
+Send a test push with simctl_push_notification
 ```
 
-### Dispositivo físico
+### Physical Device
 
 ```
-Lista iPhones conectados con devicectl_list
-Captura logs 15s del dispositivo <UDID> con devicectl_logs
+List connected iPhones with devicectl_list
+Capture 15s logs from device <UDID> with devicectl_logs
 ```
 
-### Perfilado y Firma
+### Profiling & Signing
 
 ```
-Graba 10s de Time Profiler con xctrace_profile en /tmp/profile.trace
-Verifica certificados con xcode_certificates_check y sube el build con agvtool_version_bump bump_build
-Archiva y exporta IPA con xcode_archive_export usando ExportOptions.plist
+Record 10s Time Profiler with xctrace_profile at /tmp/profile.trace
+Check certificates with xcode_certificates_check and bump build with agvtool_version_bump bump_build
+Archive and export IPA with xcode_archive_export using ExportOptions.plist
 ```
 
-### Editor y Localización
+### Editor & Localization
 
 ```
-Dame el archivo activo de Xcode con xcode_get_active_file
-Abre Sources/ContentView.swift:42 con xcode_open_at_line
-Revisa qué traducciones faltan en Localizable.xcstrings con xcode_sync_strings
-Formatea Sources/ con swift_format_lint mode format
+Get the active Xcode file with xcode_get_active_file
+Open Sources/ContentView.swift:42 with xcode_open_at_line
+Check missing translations in Localizable.xcstrings with xcode_sync_strings
+Format Sources/ with swift_format_lint mode format
 ```
 
-## 5. Permisos y Trust
+## 5. Permissions & Trust
 
-Claude Code puede pedir aprobación la primera vez que usa una tool MCP que ejecuta shell (`xcodebuild`, `simctl`).
+Claude Code may ask for approval the first time it uses an MCP tool that runs shell (`xcodebuild`, `simctl`).
 
-- Responde `Allow` o `Allow for this session`
-- Para CI / headless: `claude --allow-dangerously-skip-permissions` (no recomendado)
+- Answer `Allow` or `Allow for this session`
+- For CI / headless: `claude --allow-dangerously-skip-permissions` (not recommended)
 
-Si usas `.mcp.json` en repo compartido, cada colaborador debe tener `node` y `Xcode` instalados; el path a `index.js` debe ser absoluto o relativo correcto.
+If you use `.mcp.json` in a shared repo, every collaborator needs `node` and `Xcode` installed; the path to `index.js` must be absolute or correct relative.
 
 ## 6. Troubleshooting Claude Code
 
-| Síntoma | Solución |
+| Symptom | Solution |
 |---|---|
-| `claude mcp list` no muestra xcode | `claude mcp add xcode -- node /abs/path/index.js` y `claude mcp list` de nuevo; verifica `~/.claude.json` |
-| `Cannot find package '@modelcontextprotocol/sdk'` | `yarn install` con `nodeLinker: node-modules` en `.yarnrc.yml`; no PnP puro |
-| `xcodebuild: error: SDK not found` | `sudo xcode-select -s /Applications/Xcode.app` y `make doctor` |
-| `No devices are booted` | `simctl_lifecycle {action:"boot", udid:"..."} ` o `open -a Simulator` |
-| Claude no invoca tools automáticamente | Se explícito: "usa la herramienta MCP xcode_build" o habilita `tools` en el prompt |
-| `.mcp.json` ignorado | Está en `.gitignore`? Debe estar commiteado; ejecuta `claude mcp list` dentro del dir del proyecto |
-| Logs vacíos | `claude --mcp-debug` y revisa stderr `✅ Xcode MCP Server iniciado` |
+| `claude mcp list` doesn't show xcode | `claude mcp add xcode -- node /abs/path/index.js` and `claude mcp list` again; check `~/.claude.json` |
+| `Cannot find package '@modelcontextprotocol/sdk'` | `yarn install` with `nodeLinker: node-modules` in `.yarnrc.yml`; no pure PnP |
+| `xcodebuild: error: SDK not found` | `sudo xcode-select -s /Applications/Xcode.app` and `make doctor` |
+| `No devices are booted` | `simctl_lifecycle {action:"boot", udid:"..."} ` or `open -a Simulator` |
+| Claude doesn't auto-invoke tools | Be explicit: "use the MCP tool xcode_build" or enable `tools` in prompt |
+| `.mcp.json` ignored | Is it in `.gitignore`? It should be committed; run `claude mcp list` inside project dir |
+| Empty logs | `claude --mcp-debug` and check stderr `✅ Xcode MCP Server started` |
 
-## 7. Diferencias con OpenCode y Codex
+## 7. Differences with OpenCode and Codex
 
-| Cliente | Config | Comando |
+| Client | Config | Command |
 |---|---|---|
 | **OpenCode** | `opencode.json` (`mcpServers`) | `node /.../index.js` |
 | **Codex** | `~/.codex/config.toml` (`mcp_servers`) | `node /.../index.js` |
 | **Claude Code** | `claude mcp add` / `.mcp.json` (`mcpServers`) | `claude mcp add xcode -- node ...` |
 
-Todos usan el mismo `index.js` stdio — mismo `tools/list` (25 tools). Ver también: [`opencode.md`](opencode.md) · [`codex.md`](codex.md) · [`tools.md`](tools.md)
+All use the same `index.js` stdio — same `tools/list` (25 tools). See also: [`opencode.md`](opencode.md) · [`codex.md`](codex.md) · [`tools.md`](tools.md)

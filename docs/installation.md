@@ -1,15 +1,17 @@
-# Instalación
+# Installation
 
-Guía paso a paso para instalar **Xcode MCP Server** con **Yarn 4 (Berry)** y **Make**.
+> 🌐 **Language:** **English** | [Español](es/installation.md)
 
-## 1. Requisitos previos
+Step-by-step guide to install **Xcode MCP Server** with **Yarn 4 (Berry)** and **Make**.
+
+## 1. Prerequisites
 
 ```bash
 # macOS + Xcode
 xcodebuild -version
-# Xcode 15.4  Build version 15F31d  (ejemplo)
+# Xcode 15.4  Build version 15F31d  (example)
 
-# Command Line Tools (incluye make, git, xcrun)
+# Command Line Tools (includes make, git, xcrun)
 xcode-select --install
 make --version
 # GNU Make 3.81
@@ -18,64 +20,64 @@ make --version
 node --version
 # v20.x / v22.x
 
-# Yarn 4 — vía Corepack (recomendado)
+# Yarn 4 — via Corepack (recommended)
 corepack enable
 corepack prepare yarn@stable --activate
 yarn --version
 # 4.18.0
 ```
 
-> **Nota:** El proyecto usa `yarnPath: .yarn/releases/yarn-4.18.0.cjs` — no necesitas instalar Yarn global si tienes Corepack. `make install` hace fallback automático.
+> **Note:** The project uses `yarnPath: .yarn/releases/yarn-4.18.0.cjs` — you don't need a global Yarn install if you have Corepack. `make install` falls back automatically.
 
-Opcional pero recomendado:
+Optional but recommended:
 ```bash
 brew install swift-format swiftlint
 ```
 
-## 2. Clonar
+## 2. Clone
 
 ```bash
 git clone https://github.com/YanxReal/Xcode-MPC.git
 cd Xcode-MPC
 ```
 
-## 3. Instalar dependencias
+## 3. Install dependencies
 
-### Vía Make (recomendada)
+### Via Make (recommended)
 
 ```bash
 make install
 ```
 
-Equivale a:
+Equivalent to:
 ```bash
 yarn install
 chmod +x index.js
 ```
 
-Salida esperada:
+Expected output:
 ```
 ➤ YN0000: · Yarn 4.18.0
 ➤ YN0000: ┌ Resolution step
 ➤ YN0000: └ Completed
 ➤ YN0000: · Done with warnings in 3s
-✓ dependencias instaladas
+✓ dependencies installed
 ```
 
-### Vía Yarn directo
+### Via Yarn directly
 
 ```bash
 yarn install
 ```
 
-### Reinstalación limpia
+### Clean reinstall
 
 ```bash
 make reinstall
 # rm -rf node_modules .yarn/cache + yarn install
 ```
 
-## 4. Verificar
+## 4. Verify
 
 ```bash
 make doctor
@@ -89,33 +91,33 @@ make lint
 # ✓ lint ok
 
 make test
-# ✓ tools/list: 25 herramientas
+# ✓ tools/list: 25 tools
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 ```
 
-## 5. Configuración Yarn Berry
+## 5. Yarn Berry Configuration
 
-El repo incluye:
+The repo includes:
 
 - `.yarnrc.yml` → `yarnPath: .yarn/releases/yarn-4.18.0.cjs`
-- `.yarn/releases/yarn-4.18.0.cjs` — Yarn vendorizado (no necesita instalación global)
-- `yarn.lock` — lockfile inmutable (`yarn install --immutable` en CI)
+- `.yarn/releases/yarn-4.18.0.cjs` — Vendored Yarn (no global install needed)
+- `yarn.lock` — Immutable lockfile (`yarn install --immutable` in CI)
 
-Comandos útiles:
+Useful commands:
 
 ```bash
 yarn --version          # 4.18.0
-yarn install            # instalar
-yarn install --immutable # CI — falla si lock desincronizado
-yarn up                 # actualizar deps
-yarn dedupe             # deduplicar
-yarn info --all         # inspeccionar
+yarn install            # install
+yarn install --immutable # CI — fails if lock is out of sync
+yarn up                 # update deps
+yarn dedupe             # deduplicate
+yarn info --all         # inspect
 ```
 
-### Migrar desde npm
+### Migrate from npm
 
-Si vienes de `npm` / `package-lock.json`:
+If you come from `npm` / `package-lock.json`:
 
 ```bash
 rm -f package-lock.json
@@ -125,15 +127,17 @@ git add yarn.lock .yarnrc.yml package.json
 
 ## 6. Troubleshooting
 
-| Problema | Solución |
+| Issue | Solution |
 |---|---|
-| `yarn: command not found` | `corepack enable && corepack prepare yarn@stable --activate` o `npm i -g yarn` |
-| `YN0028: The lockfile would have been modified` | `yarn install` local y commitear `yarn.lock` |
+| `yarn: command not found` | `corepack enable && corepack prepare yarn@stable --activate` or `npm i -g yarn` |
+| `YN0028: The lockfile would have been modified` | Run `yarn install` locally and commit `yarn.lock` |
 | `xcodebuild: command not found` | `sudo xcode-select -s /Applications/Xcode.app` |
-| `simctl` falla | `xcrun simctl list --json devices` debe funcionar — abre Xcode una vez |
-| `DerivedData` corrupto | `make clean` o `rm -rf ~/Library/Developer/Xcode/DerivedData` |
+| `simctl` fails | `xcrun simctl list --json devices` must work — open Xcode once |
+| `DerivedData` corrupted | `make clean` or `rm -rf ~/Library/Developer/Xcode/DerivedData` |
 
-## 7. Siguiente paso
+## 7. Next steps
 
-- [Integración OpenCode](opencode.md)
-- [Referencia Tools](tools.md)
+- [OpenCode Integration](opencode.md)
+- [Tools Reference](tools.md)
+- [Codex Integration](codex.md)
+- [Claude Code Integration](claude-code.md)

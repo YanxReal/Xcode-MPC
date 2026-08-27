@@ -15,7 +15,7 @@
 
 > 🌐 **Idioma:** [English](README.md) | **Español**
 
-[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-25) • [OpenCode](docs/opencode.md) • [Codex](docs/codex.md) • [Claude Code](docs/claude-code.md) • [Docs](docs/architecture.md)
+[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-25) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
 
 </div>
 
@@ -205,9 +205,9 @@ Elige **uno** (o los tres — mismo `index.js` sirve para todos):
 
 Detalles completos paso a paso con JSON/TOML copiable:
 
-- 📘 **[OpenCode → docs/opencode.md](docs/opencode.md)**
-- 📗 **[Codex → docs/codex.md](docs/codex.md)**
-- 📙 **[Claude Code → docs/claude-code.md](docs/claude-code.md)**
+- 📘 **[OpenCode → docs/es/opencode.md](docs/es/opencode.md)**
+- 📗 **[Codex → docs/es/codex.md](docs/es/codex.md)**
+- 📙 **[Claude Code → docs/es/claude-code.md](docs/es/claude-code.md)**
 
 ### Paso 6 — Reinicia y prueba
 
@@ -303,7 +303,7 @@ O por proyecto con `.mcp.json`:
 }
 ```
 
-> Ejemplos de prompts para cada cliente → [`docs/opencode.md`](docs/opencode.md) · [`docs/codex.md`](docs/codex.md) · [`docs/claude-code.md`](docs/claude-code.md) · Plantillas: [`.mcp.json.example`](.mcp.json.example) · [`.codex-config.toml.example`](.codex-config.toml.example)
+> Ejemplos de prompts para cada cliente → [`docs/es/opencode.md`](docs/es/opencode.md) · [`docs/es/codex.md`](docs/es/codex.md) · [`docs/es/claude-code.md`](docs/es/claude-code.md) · Plantillas: [`.mcp.json.example`](.mcp.json.example) · [`.codex-config.toml.example`](.codex-config.toml.example)
 
 ---
 
@@ -351,7 +351,7 @@ O por proyecto con `.mcp.json`:
 
 `xcode_sync_strings` (`.xcstrings` → `missing` / `pendingTranslation` / `emptyValues`)
 
-> Referencia completa con JSON Schema + ejemplos copiables → [`docs/tools.md`](docs/tools.md)
+> Referencia completa con JSON Schema + ejemplos copiables → [`docs/es/tools.md`](docs/es/tools.md)
 
 ---
 
@@ -372,7 +372,7 @@ make fmt           # prettier si está disponible
 make release VERSION=1.0.1  # bump + tag + push
 ```
 
-Detalles → [`docs/development.md`](docs/development.md)
+Detalles → [`docs/es/development.md`](docs/es/development.md)
 
 ---
 
@@ -380,13 +380,13 @@ Detalles → [`docs/development.md`](docs/development.md)
 
 | Doc | Para quién | Qué cubre |
 |---|---|---|
-| [`installation.md`](docs/installation.md) | Todos | Yarn Berry, Corepack, `yarnPath` vendorizado, troubleshooting |
-| [`tools.md`](docs/tools.md) | LLM / Dev | Las 25 tools, JSON Schema, ejemplos JSON listos para copiar |
-| [`opencode.md`](docs/opencode.md) | OpenCode | `opencode.json` global/local, prompts, env `DEVELOPER_DIR` |
-| [`codex.md`](docs/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
-| [`claude-code.md`](docs/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
-| [`development.md`](docs/development.md) | Contribuidores | Estructura, cómo añadir tool, CI, release |
-| [`architecture.md`](docs/architecture.md) | Curiosos | Por qué single-file, helpers, dispatcher, flujo stdio |
+| [`installation.md`](docs/es/installation.md) | Todos | Yarn Berry, Corepack, `yarnPath` vendorizado, troubleshooting |
+| [`tools.md`](docs/es/tools.md) | LLM / Dev | Las 25 tools, JSON Schema, ejemplos JSON listos para copiar |
+| [`opencode.md`](docs/es/opencode.md) | OpenCode | `opencode.json` global/local, prompts, env `DEVELOPER_DIR` |
+| [`codex.md`](docs/es/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
+| [`claude-code.md`](docs/es/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
+| [`development.md`](docs/es/development.md) | Contribuidores | Estructura, cómo añadir tool, CI, release |
+| [`architecture.md`](docs/es/architecture.md) | Curiosos | Por qué single-file, helpers, dispatcher, flujo stdio |
 
 ---
 
@@ -418,7 +418,7 @@ index.js (1220 líneas, 1 archivo)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```
 
-Ver [`docs/architecture.md`](docs/architecture.md) para decisión single-file, flujo `OpenCode → stdin → handler → xcrun → stdout`.
+Ver [`docs/es/architecture.md`](docs/es/architecture.md) para decisión single-file, flujo `OpenCode → stdin → handler → xcrun → stdout`.
 
 ---
 

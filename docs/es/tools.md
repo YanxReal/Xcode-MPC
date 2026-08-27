@@ -1,12 +1,12 @@
-# Tools Reference (25)
+# Referencia de Herramientas (25)
 
-> 🌐 **Language:** **English** | [Español](es/tools.md)
+> 🌐 **Idioma:** [English](../tools.md) | **Español**
 
-All tools use **JSON Schema** (`inputSchema`) and return `content: [{type:"text", text}]` with `isError:true` on failure. Run via OpenCode or MCP Inspector.
+Todas las herramientas usan **JSON Schema** (`inputSchema`) y retornan `content: [{type:"text", text}]` con `isError:true` en fallos. Ejecuta vía OpenCode o MCP Inspector.
 
 ---
 
-## 1. Build, Diagnostics & Clean
+## 1. Compilación, Diagnóstico y Limpieza
 
 ### `xcode_build`
 `xcodebuild build`
@@ -20,7 +20,7 @@ All tools use **JSON Schema** (`inputSchema`) and return `content: [{type:"text"
   "configuration": "Debug"
 }
 ```
-Returns full stdout/stderr. Uses `shellEscape` for paths with spaces.
+Retorna stdout/stderr completos. Usa `shellEscape` para paths con espacios.
 
 ### `xcode_clean`
 `xcodebuild clean` [+ `rm -rf ~/Library/Developer/Xcode/DerivedData`]
@@ -33,9 +33,9 @@ Returns full stdout/stderr. Uses `shellEscape` for paths with spaces.
 `xcodebuild -list -json`
 
 ```json
-{ "workspace": "MyApp.xcworkspace", "directory": "/path/to/project" }
+{ "workspace": "MyApp.xcworkspace", "directory": "/ruta/a/proyecto" }
 ```
-Returns pretty-printed JSON.
+Devuelve JSON pretty-printed.
 
 ### `xcode_analyze`
 `xcodebuild analyze`
@@ -45,7 +45,7 @@ Returns pretty-printed JSON.
 ```
 
 ### `xcode_archive_export`
-2 phases: `xcodebuild archive` → `xcodebuild -exportArchive`
+2 fases: `xcodebuild archive` → `xcodebuild -exportArchive`
 
 ```json
 {
@@ -59,18 +59,18 @@ Returns pretty-printed JSON.
 ```
 
 ### `swift_format_lint`
-`swift-format` (preferred) → fallback `swiftlint`
+`swift-format` (preferido) → fallback `swiftlint`
 
 ```json
 { "path": "Sources/", "mode": "lint", "tool": "auto" }
 ```
-- `mode: "lint"` checks
-- `mode: "format"` rewrites in-place
+- `mode: "lint"` verifica
+- `mode: "format"` reescribe in-place
 - `tool: "swift-format" | "swiftlint" | "auto"`
 
 ---
 
-## 2. Tests & Coverage
+## 2. Tests y Cobertura
 
 ### `xcode_run_tests`
 ```json
@@ -81,7 +81,7 @@ Returns pretty-printed JSON.
   "enableCodeCoverage": true
 }
 ```
-Generates `build/TestResults.xcresult`.
+Genera `build/TestResults.xcresult`.
 
 ### `xcode_test_coverage`
 `xcrun xccov view --report --json <xcresult>`
@@ -89,17 +89,17 @@ Generates `build/TestResults.xcresult`.
 ```json
 { "xcresultPath": "build/TestResults.xcresult" }
 ```
-If omitted, finds the most recent `.xcresult` in `~/Library/Developer/Xcode/DerivedData` (by `mtime`). Returns JSON + `lineCoverage` summary.
+Si se omite, busca el `.xcresult` más reciente en `~/Library/Developer/Xcode/DerivedData` (por `mtime`). Retorna JSON + resumen `lineCoverage`.
 
 ---
 
-## 3. Simulators `xcrun simctl` (9 tools)
+## 3. Simuladores `xcrun simctl` (9 herramientas)
 
 ### `simctl_list`
 ```json
 { "booted": true }
 ```
-`xcrun simctl list --json devices` filtered by `state === "Booted"`.
+`xcrun simctl list --json devices` filtrado por `state === "Booted"`.
 
 ### `simctl_lifecycle`
 ```json
@@ -118,19 +118,19 @@ If omitted, finds the most recent `.xcresult` in `~/Library/Developer/Xcode/Deri
 { "type": "screenshot", "outputPath": "/tmp/screen.png", "udid": "booted" }
 { "type": "record", "outputPath": "/tmp/cap.mp4", "durationSeconds": 10 }
 ```
-Screenshots via `simctl io screenshot`. Record uses `recordVideo` with `SIGINT` after `durationSeconds`.
+Screenshots vía `simctl io screenshot`. Record usa `recordVideo` con `SIGINT` tras `durationSeconds`.
 
 ### `simctl_push_notification`
 ```json
-{ "bundleId": "com.yanxreal.myapp", "payloadJson": "{\"aps\":{\"alert\":\"Hello\"}}", "udid": "booted" }
+{ "bundleId": "com.yanxreal.myapp", "payloadJson": "{\"aps\":{\"alert\":\"Hola\"}}", "udid": "booted" }
 ```
-Validates JSON and writes tmpfile before `simctl push`.
+Valida JSON y escribe tmpfile antes de `simctl push`.
 
 ### `simctl_location_mock`
 ```json
 { "latitude": 40.4168, "longitude": -3.7038 }
 ```
-Validates lat/lon ranges.
+Valida rangos lat/lon.
 
 ### `simctl_privacy_control`
 ```json
@@ -152,23 +152,23 @@ Validates lat/lon ranges.
 
 ---
 
-## 4. Physical Devices `xcrun devicectl`
+## 4. Dispositivos físicos `xcrun devicectl`
 
 ### `devicectl_list`
 ```json
 {}
 ```
-`xcrun devicectl list devices --json` with text fallback if `--json` unavailable (Xcode <15).
+`xcrun devicectl list devices --json` con fallback a texto si `--json` no disponible (Xcode <15).
 
 ### `devicectl_logs`
 ```json
 { "deviceUdid": "00008101-001A2B...", "durationSeconds": 10 }
 ```
-Streaming for N seconds (1–120) using `timeout`/`gtimeout` or `bash` fallback. Returns first 500 lines / 8000 chars.
+Streaming durante N segundos (1..120) usando `timeout`/`gtimeout` o `bash` fallback. Retorna primeros 500 líneas / 8000 chars.
 
 ---
 
-## 5. Profiling `xcrun xctrace`
+## 5. Perfilado `xcrun xctrace`
 
 ### `xctrace_profile`
 ```json
@@ -184,7 +184,7 @@ Streaming for N seconds (1–120) using `timeout`/`gtimeout` or `bash` fallback.
 
 ---
 
-## 6. Versions & Security
+## 6. Versiones y Seguridad
 
 ### `agvtool_version_bump`
 ```json
@@ -192,7 +192,7 @@ Streaming for N seconds (1–120) using `timeout`/`gtimeout` or `bash` fallback.
 { "action": "set_version", "versionString": "2.0.0" }
 { "action": "set_build", "versionString": "42" }
 ```
-Maps to `xcrun agvtool next-version -all` / `new-marketing-version` / `new-version -all`.
+Mapea a `xcrun agvtool next-version -all` / `new-marketing-version` / `new-version -all`.
 
 ### `xcode_certificates_check`
 ```json
@@ -202,7 +202,7 @@ Maps to `xcrun agvtool next-version -all` / `new-marketing-version` / `new-versi
 
 ---
 
-## 7. Xcode GUI Editor
+## 7. Editor GUI Xcode
 
 ### `xcode_get_active_file`
 ```json
@@ -214,17 +214,17 @@ AppleScript `osascript` → `tell application "Xcode" to get path of front docum
 ```json
 { "filePath": "/abs/path/View.swift", "line": 42, "column": 8 }
 ```
-Attempt 1: `xed --line 42 /path` → Attempt 2: `open xcode://open?path=...&line=42&column=8`
+Intento 1: `xed --line 42 /path` → Intento 2: `open xcode://open?path=...&line=42&column=8`
 
 ---
 
-## 8. Localization
+## 8. Localización
 
 ### `xcode_sync_strings`
 ```json
 { "filePath": "MyApp/Localizable.xcstrings" }
 ```
-Parses String Catalog (`sourceLanguage`, `strings[].localizations[lang].stringUnit.{state,value}`) and reports:
+Parsea String Catalog (`sourceLanguage`, `strings[].localizations[lang].stringUnit.{state,value}`) y reporta:
 
 ```json
 {
@@ -238,15 +238,15 @@ Parses String Catalog (`sourceLanguage`, `strings[].localizations[lang].stringUn
 
 ---
 
-## Error Handling
+## Manejo de errores
 
-All tools catch via global `try/catch` in `index.js:1195` and helpers `runCommand` in `index.js:39` return `{success, stdout, stderr, code}`. Formatted output via `formatResult` with `isError:true` when applicable.
+Todas las herramientas capturan `try/catch` global en `index.js:1195` y helpers `runCommand` en `index.js:39` retornan `{success, stdout, stderr, code}`. Salida formateada vía `formatResult` con `isError:true` si aplica.
 
-## Quick Tests
+## Tests rápidos
 
 ```bash
-# via MCP Inspector
+# vía MCP Inspector
 yarn inspect
-# or
+# o
 make test
 ```

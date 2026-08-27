@@ -1,10 +1,12 @@
-# Integración con OpenCode
+# OpenCode Integration
 
-## Configuración
+> 🌐 **Language:** **English** | [Español](es/opencode.md)
 
-OpenCode lee servidores MCP desde `opencode.json` (global o local).
+## Configuration
 
-### Global (recomendado)
+OpenCode reads MCP servers from `opencode.json` (global or local).
+
+### Global (recommended)
 
 `~/.config/opencode/opencode.json`:
 
@@ -13,28 +15,28 @@ OpenCode lee servidores MCP desde `opencode.json` (global o local).
   "mcpServers": {
     "xcode": {
       "command": "node",
-      "args": ["/Users/tuusuario/Dev/Tools/Xcode-MPC/index.js"]
+      "args": ["/Users/youruser/Dev/Tools/Xcode-MPC/index.js"]
     }
   }
 }
 ```
 
-Con Yarn:
+With Yarn:
 
 ```json
 {
   "mcpServers": {
     "xcode": {
       "command": "yarn",
-      "args": ["--cwd", "/Users/tuusuario/Dev/Tools/Xcode-MPC", "start"]
+      "args": ["--cwd", "/Users/youruser/Dev/Tools/Xcode-MPC", "start"]
     }
   }
 }
 ```
 
-### Local al proyecto
+### Local to project
 
-`./opencode.json` en la raíz de tu app iOS:
+`./opencode.json` at the root of your iOS app:
 
 ```json
 {
@@ -47,67 +49,67 @@ Con Yarn:
 }
 ```
 
-### Verificación
+### Verification
 
-Reinicia OpenCode y pide:
-
-```
-lista las herramientas de xcode
-compila el scheme MyApp en Debug
-lista simuladores booted
-```
-
-Debes ver 25 herramientas registradas (`xcode_build`, `simctl_list`, …) y el log `✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas` en stderr.
-
-## Ejemplos de prompts
-
-### Compilación
+Restart OpenCode and ask:
 
 ```
-Compila el scheme MyApp con xcode_build usando destination "platform=iOS Simulator,name=iPhone 15"
+list the xcode tools
+build the MyApp scheme in Debug
+list booted simulators
 ```
 
-→ OpenCode llama `xcode_build {scheme:"MyApp", destination:"platform=iOS Simulator,name=iPhone 15"}`
+You should see 25 registered tools (`xcode_build`, `simctl_list`, …) and the log `✅ Xcode MCP Server started (stdio) — 25 tools registered` on stderr.
+
+## Prompt Examples
+
+### Build
+
+```
+Build scheme MyApp with xcode_build using destination "platform=iOS Simulator,name=iPhone 15"
+```
+
+→ OpenCode calls `xcode_build {scheme:"MyApp", destination:"platform=iOS Simulator,name=iPhone 15"}`
 
 ### Tests
 
 ```
-Ejecuta los tests de MyAppTests con xcode_run_tests y luego muestra la cobertura con xcode_test_coverage
+Run MyAppTests with xcode_run_tests and then show coverage with xcode_test_coverage
 ```
 
-### Simulador
+### Simulator
 
 ```
-Lista los simuladores booted, instala build/Debug-iphonesimulator/MyApp.app y haz screenshot en /tmp/a.png
+List booted simulators, install build/Debug-iphonesimulator/MyApp.app and take a screenshot at /tmp/a.png
 ```
 
-Secuencia: `simctl_list {booted:true}` → `simctl_install_launch {appPath, launch:true}` → `simctl_media_capture {type:"screenshot"}`
+Sequence: `simctl_list {booted:true}` → `simctl_install_launch {appPath, launch:true}` → `simctl_media_capture {type:"screenshot"}`
 
-### Localización
+### Localization
 
 ```
-Revisa Localizable.xcstrings con xcode_sync_strings y dime qué claves faltan en español
+Check Localizable.xcstrings with xcode_sync_strings and tell me which keys are missing in Spanish
 ```
 
 ### Editor
 
 ```
-Abre Sources/ContentView.swift en la línea 42 con xcode_open_at_line
+Open Sources/ContentView.swift at line 42 with xcode_open_at_line
 ```
 
 ## Troubleshooting
 
-| Síntoma | Solución |
+| Symptom | Solution |
 |---|---|
-| `xcode_build` falla con `No such file` | Verifica `workspace`/`project` ruta absoluta; usa `xcode_list_schemes` para listar schemes |
-| `simctl` dice `No devices are booted` | `simctl_lifecycle {action:"boot", udid:"<UDID>"}` o `open -a Simulator` |
-| `swift_format_lint` dice `no encontrado` | `brew install swift-format swiftlint` |
-| OpenCode no ve herramientas | `make lint && make test` local; verifica `opencode.json` path absoluto y permisos `chmod +x index.js` |
-| Logs vacíos | Activa verbose en OpenCode; revisa stderr `✅ Xcode MCP Server iniciado` |
+| `xcode_build` fails with `No such file` | Check `workspace`/`project` absolute path; use `xcode_list_schemes` to list schemes |
+| `simctl` says `No devices are booted` | `simctl_lifecycle {action:"boot", udid:"<UDID>"}` or `open -a Simulator` |
+| `swift_format_lint` says `not found` | `brew install swift-format swiftlint` |
+| OpenCode shows no tools | `make lint && make test` locally; check `opencode.json` absolute path and `chmod +x index.js` |
+| Empty logs | Enable verbose in OpenCode; check stderr `✅ Xcode MCP Server started` |
 
-## Variables de entorno
+## Environment Variables
 
-El servidor no requiere `env` especial, pero puedes pasar:
+The server needs no special `env`, but you can pass:
 
 ```json
 {
@@ -125,12 +127,12 @@ El servidor no requiere `env` especial, pero puedes pasar:
 
 ## Inspector
 
-Para probar sin OpenCode:
+To test without OpenCode:
 
 ```bash
 yarn inspect
-# o
+# or
 make inspect
 ```
 
-Abre `http://localhost:6274` y haz `tools/list` / `tools/call`.
+Open `http://localhost:6274` and run `tools/list` / `tools/call`.

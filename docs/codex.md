@@ -1,18 +1,20 @@
-# Integración con Codex (OpenAI)
+# Codex Integration (OpenAI)
 
-> **Codex CLI** (`codex` — Muse de OpenAI) soporta servidores MCP vía `config.toml`. Esta guía integra **Xcode MCP Server** con Codex usando `StdioServerTransport`.
+> 🌐 **Language:** **English** | [Español](es/codex.md)
 
-## 1. Requisitos
+> **Codex CLI** (`codex` — OpenAI's coding agent) supports MCP servers via `config.toml`. This guide integrates **Xcode MCP Server** with Codex using `StdioServerTransport`.
 
-- Codex CLI instalado: `npm i -g @openai/codex` o `brew install codex`
-- Verificación: `codex --version`
-- Este repo con `yarn install` y `make test` OK
+## 1. Requirements
 
-## 2. Configuración
+- Codex CLI installed: `npm i -g @openai/codex` or `brew install codex`
+- Verify: `codex --version`
+- This repo with `yarn install` and `make test` OK
 
-Codex lee MCP servers desde `~/.codex/config.toml` (global) o `.codex/config.toml` (por proyecto).
+## 2. Configuration
 
-### Opción A — Global (`~/.codex/config.toml`)
+Codex reads MCP servers from `~/.codex/config.toml` (global) or `.codex/config.toml` (per-project).
+
+### Option A — Global (`~/.codex/config.toml`)
 
 ```toml
 # ~/.codex/config.toml
@@ -20,22 +22,22 @@ Codex lee MCP servers desde `~/.codex/config.toml` (global) o `.codex/config.tom
 [mcp_servers.xcode]
 command = "node"
 args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
-# cwd opcional si usas paths relativos
+# optional cwd if you use relative paths
 # cwd = "/Users/YanxReal/Dev/Tools/Xcode-MPC"
 
-# Con Yarn (si usas PnP / Berry, preferible node directo)
+# With Yarn (if you use PnP / Berry, prefer direct node)
 # [mcp_servers.xcode]
 # command = "yarn"
 # args = ["--cwd", "/Users/YanxReal/Dev/Tools/Xcode-MPC", "start"]
 
-# Variables de entorno opcionales
+# Optional environment variables
 # [mcp_servers.xcode.env]
 # DEVELOPER_DIR = "/Applications/Xcode.app/Contents/Developer"
 ```
 
-### Opción B — Por proyecto (`./.codex/config.toml`)
+### Option B — Per-project (`./.codex/config.toml`)
 
-En la raíz de tu app iOS:
+At the root of your iOS app:
 
 ```toml
 [mcp_servers.xcode]
@@ -43,9 +45,9 @@ command = "node"
 args = ["../Xcode-MPC/index.js"]
 ```
 
-### Opción C — Config JSON (Codex >=0.4, alternativo)
+### Option C — JSON Config (Codex >=0.4, alternative)
 
-Algunas versiones exponen `~/.codex/config.json`:
+Some versions expose `~/.codex/config.json`:
 
 ```json
 {
@@ -58,107 +60,107 @@ Algunas versiones exponen `~/.codex/config.json`:
 }
 ```
 
-> Si Codex no detecta `config.toml`, prueba ambas rutas y reinicia `codex`.
+> If Codex doesn't detect `config.toml`, try both paths and restart `codex`.
 
-## 3. Verificación
+## 3. Verification
 
 ```bash
-# Validar sintaxis del servidor
+# Validate server syntax
 make lint
 
-# Reiniciar Codex
+# Restart Codex
 codex --help
 codex mcp list
-# debe listar: xcode (25 tools)
+# should list: xcode (25 tools)
 
-# Dentro de codex, prueba:
-# "lista las herramientas de xcode"
-# "compila MyApp con xcode_build scheme MyApp"
+# Inside codex, try:
+# "list the xcode tools"
+# "build MyApp with xcode_build scheme MyApp"
 ```
 
-Logs del servidor van a stderr:
+Server logs go to stderr:
 ```
-✅ Xcode MCP Server iniciado (stdio) — 25 herramientas registradas
+✅ Xcode MCP Server started (stdio) — 25 tools registered
 ```
 
-Si no aparece, ejecuta manual:
+If it doesn't appear, run manually:
 ```bash
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node index.js
 ```
 
-## 4. Ejemplos de prompts en Codex
+## 4. Prompt Examples in Codex
 
-### Compilación y diagnóstico
+### Build & Diagnostics
 
 ```
-Compila el scheme MyApp en Debug para iPhone 15 usando xcode_build
+Build scheme MyApp in Debug for iPhone 15 using xcode_build
 ```
 
 → `xcode_build {scheme:"MyApp", configuration:"Debug", destination:"platform=iOS Simulator,name=iPhone 15"}`
 
 ```
-Limpia el proyecto y purga DerivedData con xcode_clean
+Clean the project and purge DerivedData with xcode_clean
 ```
 
-### Tests y cobertura
+### Tests & Coverage
 
 ```
-Ejecuta xcode_run_tests para MyApp en iPhone 15 y luego xcode_test_coverage
+Run xcode_run_tests for MyApp on iPhone 15 and then xcode_test_coverage
 ```
 
-### Simuladores
+### Simulators
 
 ```
-Lista los simuladores booted con simctl_list, luego haz boot del iPhone 15 con simctl_lifecycle y toma un screenshot con simctl_media_capture
+List booted simulators with simctl_list, then boot iPhone 15 with simctl_lifecycle and take a screenshot with simctl_media_capture
 ```
 
 ```
-Instala build/Debug-iphonesimulator/MyApp.app con simctl_install_launch y abre myapp://detail/42 con simctl_open_url
+Install build/Debug-iphonesimulator/MyApp.app with simctl_install_launch and open myapp://detail/42 with simctl_open_url
 ```
 
-### Dispositivo físico
+### Physical Device
 
 ```
-Lista dispositivos físicos con devicectl_list y captura logs 10s con devicectl_logs
+List physical devices with devicectl_list and capture 10s logs with devicectl_logs
 ```
 
-### Perfilado
+### Profiling
 
 ```
-Graba una traza Time Profiler de 5s con xctrace_profile en /tmp/trace.trace
+Record a 5s Time Profiler trace with xctrace_profile at /tmp/trace.trace
 ```
 
-### Firma y versiones
+### Signing & Versions
 
 ```
-Verifica certificados con xcode_certificates_check y haz bump_build con agvtool_version_bump
+Check certificates with xcode_certificates_check and do bump_build with agvtool_version_bump
 ```
 
-### Localización y Editor
+### Localization & Editor
 
 ```
-Revisa Localizable.xcstrings con xcode_sync_strings
-Abre Sources/App.swift línea 42 con xcode_open_at_line
-Obtén el archivo activo de Xcode con xcode_get_active_file
+Check Localizable.xcstrings with xcode_sync_strings
+Open Sources/App.swift line 42 with xcode_open_at_line
+Get the active Xcode file with xcode_get_active_file
 ```
 
 ## 5. Troubleshooting Codex
 
-| Síntoma | Solución |
+| Symptom | Solution |
 |---|---|
-| `codex mcp list` vacío | Verifica `~/.codex/config.toml` sintaxis TOML, path absoluto a `index.js`, `chmod +x index.js`, `make test` |
-| `spawn node ENOENT` | Usa path absoluto a `node`: `which node` → `/opt/homebrew/bin/node` |
-| `Cannot find package '@modelcontextprotocol/sdk'` | `yarn install` (nodeLinker: node-modules en `.yarnrc.yml`), no uses `yarn` PnP puro |
+| `codex mcp list` empty | Check `~/.codex/config.toml` TOML syntax, absolute path to `index.js`, `chmod +x index.js`, `make test` |
+| `spawn node ENOENT` | Use absolute `node` path: `which node` → `/opt/homebrew/bin/node` |
+| `Cannot find package '@modelcontextprotocol/sdk'` | `yarn install` (nodeLinker: node-modules in `.yarnrc.yml`), don't use pure PnP |
 | `xcodebuild: command not found` | `sudo xcode-select -s /Applications/Xcode.app` |
-| Codex no llama tools | Añade instrucción explícita: "usa la herramienta xcode_build de MCP" |
+| Codex doesn't call tools | Add explicit instruction: "use the MCP tool xcode_build" |
 
-## 6. Diferencias con OpenCode
+## 6. Differences with OpenCode
 
-| Aspecto | OpenCode | Codex |
+| Aspect | OpenCode | Codex |
 |---|---|---|
 | Config | `opencode.json` JSON | `~/.codex/config.toml` TOML |
-| Clave | `mcpServers` | `mcp_servers` |
-| Comando | `node /.../index.js` | idéntico |
-| Inspector | `yarn inspect` | `codex mcp list` + logs stderr |
+| Key | `mcpServers` | `mcp_servers` |
+| Command | `node /.../index.js` | identical |
+| Inspector | `yarn inspect` | `codex mcp list` + stderr logs |
 
-Ver también: [`opencode.md`](opencode.md) · [`claude-code.md`](claude-code.md) · [`tools.md`](tools.md)
+See also: [`opencode.md`](opencode.md) · [`claude-code.md`](claude-code.md) · [`tools.md`](tools.md)

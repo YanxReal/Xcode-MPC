@@ -1,36 +1,49 @@
-# Desarrollo
+# Development
 
-## Flujo local
+> 🌐 **Language:** **English** | [Español](es/development.md)
+
+## Local Workflow
 
 ```bash
 git clone https://github.com/YanxReal/Xcode-MPC.git
 cd Xcode-MPC
 make install   # yarn install
-make doctor    # verifica toolchain
+make doctor    # verify toolchain
 make lint      # node --check
 make test      # smoke MCP
 make dev       # watch mode
 ```
 
-## Estructura
+## Structure
 
 ```
 Xcode-MPC/
-├── index.js                 # servidor MCP single-file (1220 líneas, 25 tools)
+├── index.js                 # single-file MCP server (1220 lines, 25 tools)
 ├── package.json             # Yarn 4, type:module, bin
-├── yarn.lock                # lockfile inmutable
-├── .yarnrc.yml              # yarnPath vendorizado
+├── yarn.lock                # immutable lockfile
+├── .yarnrc.yml              # vendored yarnPath
 ├── .yarn/releases/          # Yarn 4.18.0.cjs
 ├── Makefile                 # DX: install, lint, doctor, test, release
-├── README.md
-├── docs/
+├── README.md                # English (main)
+├── README.es.md             # Español
+├── docs/                    # English (main)
 │   ├── installation.md
 │   ├── tools.md
 │   ├── opencode.md
-│   ├── development.md       # este archivo
+│   ├── codex.md
+│   ├── claude-code.md
+│   ├── development.md       # this file
+│   └── architecture.md
+├── docs/es/                 # Español mirror
+│   ├── installation.md
+│   ├── tools.md
+│   ├── opencode.md
+│   ├── codex.md
+│   ├── claude-code.md
+│   ├── development.md
 │   └── architecture.md
 ├── scripts/
-│   ├── smoke_test.py        # smoke principal (python)
+│   ├── smoke_test.py        # main smoke (python)
 │   └── smoke_test.mjs       # fallback node
 ├── .github/
 │   ├── workflows/ci.yml     # CI macOS + Linux
@@ -41,7 +54,7 @@ Xcode-MPC/
 ## Makefile
 
 ```bash
-make help        # lista targets
+make help        # list targets
 make install     # yarn install + chmod
 make reinstall   # clean + install
 make lint        # node --check index.js
@@ -52,7 +65,7 @@ make start       # yarn start
 make dev         # yarn dev (--watch)
 make inspect     # npx @modelcontextprotocol/inspector
 make clean       # rm -rf node_modules .yarn/cache
-make fmt         # prettier (opcional)
+make fmt         # prettier (optional)
 make release VERSION=1.0.1
 ```
 
@@ -61,32 +74,32 @@ make release VERSION=1.0.1
 `.github/workflows/ci.yml`:
 
 - **macOS 14** (`macos-14`): `yarn install --immutable` → `make lint` → `make doctor` → `make test`
-- **Linux** (`ubuntu-latest`): solo `node --check` (sin Xcode)
+- **Linux** (`ubuntu-latest`): only `node --check` (no Xcode)
 
-Se ejecuta en `push` a `main/develop` y PRs a `main`.
+Runs on `push` to `main/develop` and PRs to `main`.
 
-## Convenciones
+## Conventions
 
 - **ES Modules** (`import`/`export`), `type: "module"`
-- **StdioServerTransport** — sin HTTP, solo stdio
-- **promisify(exec)** con `maxBuffer: 10MB`, `shellEscape` para paths
-- **JSON Schema** estricto (`additionalProperties:false`)
-- **try/catch** global en `CallToolRequestSchema` + retorno `isError:true`
+- **StdioServerTransport** — no HTTP, just stdio
+- **promisify(exec)** with `maxBuffer: 10MB`, `shellEscape` for paths
+- **Strict JSON Schema** (`additionalProperties:false`)
+- **Global try/catch** in `CallToolRequestSchema` + return `isError:true`
 
-## Añadir nueva herramienta
+## Adding a New Tool
 
-1. Define en `TOOLS` (`index.js:142`) con `name`, `description`, `inputSchema`
-2. Implementa `handle_nueva` con `runCommand`/`formatResult`/`textContent`/`errorContent`
-3. Registra en `HANDLERS` (`index.js:1147`)
-4. Documenta en `docs/tools.md` y `README.md`
-5. `make lint && make test && yarn inspect` → prueba `tools/call`
+1. Define in `TOOLS` (`index.js:142`) with `name`, `description`, `inputSchema`
+2. Implement `handle_new` with `runCommand`/`formatResult`/`textContent`/`errorContent`
+3. Register in `HANDLERS` (`index.js:1147`)
+4. Document in `docs/tools.md` (and `docs/es/tools.md`) + `README.md` / `README.es.md`
+5. `make lint && make test && yarn inspect` → test `tools/call`
 
-Ejemplo mínimo:
+Minimal example:
 
 ```js
 {
   name: "xcode_version",
-  description: "Muestra xcodebuild -version",
+  description: "Show xcodebuild -version",
   inputSchema: { type:"object", properties:{}, additionalProperties:false }
 }
 async function handle_xcode_version(){ const r=await runCommand("xcodebuild -version"); return textContent(formatResult("xcode_version", r)); }
@@ -98,20 +111,20 @@ HANDLERS.xcode_version = handle_xcode_version;
 ```bash
 make release VERSION=1.1.0
 # 1. npm version 1.1.0 --no-git-tag-version
-# 2. yarn install (actualiza yarn.lock)
+# 2. yarn install (updates yarn.lock)
 # 3. git commit + tag v1.1.0 + push --tags
 ```
 
-Luego crea Release en GitHub con changelog.
+Then create a GitHub Release with changelog.
 
-## Formateo
+## Formatting
 
-No hay formatter obligatorio. Si quieres:
+No mandatory formatter. If you want:
 
 ```bash
 npx --yes prettier --write "index.js" "docs/**/*.md"
-# o
+# or
 make fmt
 ```
 
-Mantén single-file legible, sin `// TODO`.
+Keep single-file readable, no `// TODO`.
