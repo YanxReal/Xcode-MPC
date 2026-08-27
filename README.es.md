@@ -15,7 +15,7 @@
 
 > 🌐 **Idioma:** [English](README.md) | **Español**
 
-[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-43) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
+[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-47) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
 
 </div>
 
@@ -67,7 +67,7 @@
 2. [Instalación paso a paso](#-instalación-paso-a-paso)
 3. [Verificación](#-verificación)
 4. [Uso con OpenCode / Codex / Claude Code](#-uso-con-opencode--codex--claude-code)
-5. [Herramientas (43)](#-herramientas-43)
+5. [Herramientas (47)](#-herramientas-47)
 6. [Comandos Make](#-comandos-make)
 7. [Documentación](#-documentación)
 8. [Arquitectura](#-arquitectura)
@@ -311,7 +311,7 @@ O por proyecto con `.mcp.json`:
 
 ---
 
-## 🛠️ Herramientas (43)
+## 🛠️ Herramientas (47)
 
 ### 1. Compilación, Diagnóstico y Limpieza
 
@@ -432,8 +432,8 @@ make test
 index.js (2250 líneas, 1 archivo)
 ├── Shebang + Imports (MCP SDK, promisify(exec), fs, path, os)
 ├── Helpers: shellEscape, expandTilde, runCommand (try/catch + 10MB buffer), formatResult
-├── TOOLS[43]: JSON Schema estricto (additionalProperties:false)
-├── Handlers[43]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
+├── TOOLS[47]: JSON Schema estricto (additionalProperties:false)
+├── Handlers[47]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
 ├── Dispatcher: HANDLERS map + ListTools/CallTool (try/catch → isError:true)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```

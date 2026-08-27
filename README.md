@@ -4,7 +4,7 @@
 
 **Model Context Protocol Server for the Apple Ecosystem**
 
-*Connect OpenCode, Codex and Claude Code to Xcode — 43 professional tools in a single `index.js`*
+*Connect OpenCode, Codex and Claude Code to Xcode — 47 professional tools in a single `index.js`*
 
 [![CI](https://github.com/YanxReal/Xcode-MPC/actions/workflows/ci.yml/badge.svg)](https://github.com/YanxReal/Xcode-MPC/actions)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
@@ -15,7 +15,7 @@
 
 > 🌐 **Language:** **English** | [Español](README.es.md)
 
-[Installation](#-step-by-step-installation) • [Tools](#-tools-43) • [OpenCode](docs/opencode.md) • [Codex](docs/codex.md) • [Claude Code](docs/claude-code.md) • [Docs](docs/architecture.md)
+[Installation](#-step-by-step-installation) • [Tools](#-tools-47) • [OpenCode](docs/opencode.md) • [Codex](docs/codex.md) • [Claude Code](docs/claude-code.md) • [Docs](docs/architecture.md)
 
 </div>
 
@@ -67,7 +67,7 @@
 2. [Step-by-step Installation](#-step-by-step-installation)
 3. [Verification](#-verification)
 4. [Usage with OpenCode / Codex / Claude Code](#-usage-with-opencode--codex--claude-code)
-5. [Tools (43)](#-tools-43)
+5. [Tools (47)](#-tools-47)
 6. [Make Commands](#-make-commands)
 7. [Documentation](#-documentation)
 8. [Architecture](#-architecture)
@@ -311,7 +311,7 @@ Or per-project with `.mcp.json`:
 
 ---
 
-## 🛠️ Tools (43)
+## 🛠️ Tools (47)
 
 ### 1. Build, Diagnostics & Clean
 
@@ -432,8 +432,8 @@ make test
 index.js (2250 lines, 1 file)
 ├── Shebang + Imports (MCP SDK, promisify(exec), fs, path, os)
 ├── Helpers: shellEscape, expandTilde, runCommand (try/catch + 10MB buffer), formatResult
-├── TOOLS[43]: Strict JSON Schema (additionalProperties:false)
-├── Handlers[43]: async handle_* with validation + fallbacks (xed→xcode://, swift-format→swiftlint)
+├── TOOLS[47]: Strict JSON Schema (additionalProperties:false)
+├── Handlers[47]: async handle_* with validation + fallbacks (xed→xcode://, swift-format→swiftlint)
 ├── Dispatcher: HANDLERS map + ListTools/CallTool (try/catch → isError:true)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```

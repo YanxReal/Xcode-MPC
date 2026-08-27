@@ -71,7 +71,7 @@ make lint
 # Reiniciar Codex
 codex --help
 codex mcp list
-# debe listar: xcode (43 tools)
+# debe listar: xcode (47 tools)
 
 # Dentro de codex, prueba:
 # "lista las herramientas de xcode"
@@ -80,7 +80,7 @@ codex mcp list
 
 Logs del servidor van a stderr:
 ```
-✅ Xcode MCP Server iniciado (stdio) — 43 herramientas registradas
+✅ Xcode MCP Server iniciado (stdio) — 47 herramientas registradas
 ```
 
 Si no aparece, ejecuta manual:
