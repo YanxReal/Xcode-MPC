@@ -1,4 +1,4 @@
-# Referencia de Herramientas (31)
+# Referencia de Herramientas (43)
 
 > 🌐 **Idioma:** [English](../tools.md) | **Español**
 

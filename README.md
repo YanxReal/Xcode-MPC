@@ -11,7 +11,7 @@
 [![Yarn 4](https://img.shields.io/badge/yarn-4.18-2C8EBB?logo=yarn&logoColor=white)](https://yarnpkg.com)
 [![MCP](https://img.shields.io/badge/MCP-Stdio_Transport-7B68EE)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](package.json)
 
 > 🌐 **Language:** **English** | [Español](README.es.md)
 
@@ -33,7 +33,7 @@
 <summary><strong>Why this server and not another?</strong></summary>
 
 - ✅ **Single-file `index.js` (1220 lines)** — no build step, no compile, auditable in one file. Shebang `#!/usr/bin/env node`, ready for `node`, `yarn start` or `npx`.
-- ✅ **31 tools with strict JSON Schema** (`additionalProperties:false`) + global `try/catch`. Each tool returns `content: [{type:"text"}]` and `isError:true` on failure — no `// TODO`.
+- ✅ **43 tools with strict JSON Schema** (`additionalProperties:false`) + global `try/catch`. Each tool returns `content: [{type:"text"}]` and `isError:true` on failure — no `// TODO`.
 - ✅ **Full Apple coverage:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
 - ✅ **Modern DX:** Vendored Yarn 4 (`.yarn/releases`), self-documenting `Makefile` with `help`, modular `docs/`, macOS CI + `make test` smoke.
 - ✅ **Multi-client:** same `index.js` works with **OpenCode**, **Codex** and **Claude Code** without changes.
@@ -55,6 +55,8 @@
 | **Editor** | 2 | `xcode_get_active_file` (AppleScript), `xcode_open_at_line` (`xed` → `xcode://`) |
 | **Localization** | 1 | `xcode_sync_strings` (`.xcstrings` → missing/pending/empty) |
 | **Assets** | 6 | `asset_list_contents`, `asset_manage_color` (Light/Dark), `asset_manage_image` (1x/2x/3x/vector), `asset_read_info`, `asset_delete`, `asset_validate_actool` (`actool`) |
+| **AppIcon** | 1 | `asset_generate_appicon` (ALL Apple OS: iOS, macOS, watchOS, tvOS, visionOS + `sips` resize) |
+| **Package / SPM** | 11 | `package_resolve`, `package_update`, `package_list_dependencies`, `package_read_resolved`, `package_reset_cache`, `package_compute_checksum`, `spm_add_dependency`, `spm_remove_dependency`, `cocoapods_manage`, `carthage_manage`, `cocoapods_to_spm_migrate` |
 
 ---
 
@@ -181,7 +183,7 @@ make lint
 
 make test
 # ➜ smoke test MCP...
-# ✓ tools/list: 31 tools
+# ✓ tools/list: 43 tools
 # ✓ xcode_sync_strings OK
 # ✓ xcode_certificates_check OK
 # ✓ smoke test PASSED
@@ -218,10 +220,10 @@ Restart OpenCode / Codex / Claude Code and type:
 list the xcode tools
 ```
 
-You should see **31 tools** and in the log:
+You should see **43 tools** and in the log:
 
 ```
-✅ Xcode MCP Server started (stdio) — 31 tools registered
+✅ Xcode MCP Server started (stdio) — 43 tools registered
 ```
 
 Done! Now you can say:
@@ -288,7 +290,7 @@ args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
 claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 # verify
 claude mcp list
-# xcode: connected — 31 tools
+# xcode: connected — 43 tools
 ```
 
 Or per-project with `.mcp.json`:
@@ -356,6 +358,14 @@ Or per-project with `.mcp.json`:
 
 `asset_list_contents` (list `*.colorset/*.imageset`), `asset_manage_color` (`#RRGGBB` Light + Dark), `asset_manage_image` (scales/vector + `preserves-vector-representation`), `asset_read_info` (`Contents.json`), `asset_delete` (safe), `asset_validate_actool` (`xcrun actool --compile`)
 
+### 10. AppIcon ALL Apple OS (1)
+
+`asset_generate_appicon` (iOS, macOS, watchOS, tvOS, visionOS — 42 slots, `sips -z` if `baseImagePath`)
+
+### 11. Package SPM / CocoaPods / Carthage (11)
+
+`package_resolve`/`update`/`list`/`read_resolved`/`reset_cache`/`compute_checksum`, `spm_add/remove_dependency`, `cocoapods_manage`, `carthage_manage`, `cocoapods_to_spm_migrate` (Podfile→Package.swift)
+
 > Full reference with JSON Schema + copy-paste examples → [`docs/tools.md`](docs/tools.md)
 
 ---
@@ -368,7 +378,7 @@ make install       # yarn install + chmod +x
 make reinstall     # clean + install (from scratch)
 make lint          # node --check index.js
 make doctor        # Check Node/Yarn/Xcode/simctl/swiftlint/osascript
-make test          # Smoke test MCP (31 tools + 2 calls)
+make test          # Smoke test MCP (43 tools + 2 calls)
 make start         # yarn start (stdio)
 make dev           # yarn dev (--watch)
 make inspect       # MCP Inspector at http://localhost:6274
@@ -386,7 +396,7 @@ Details → [`docs/development.md`](docs/development.md)
 | Doc | Audience | Covers |
 |---|---|---|
 | [`installation.md`](docs/installation.md) | Everyone | Yarn Berry, Corepack, `yarnPath` vendored, troubleshooting |
-| [`tools.md`](docs/tools.md) | LLM / Dev | All 31 tools, JSON Schema, copy-paste JSON examples |
+| [`tools.md`](docs/tools.md) | LLM / Dev | All 43 tools, JSON Schema, copy-paste JSON examples |
 | [`opencode.md`](docs/opencode.md) | OpenCode | `opencode.json` global/local, prompts, `DEVELOPER_DIR` env |
 | [`codex.md`](docs/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
 | [`claude-code.md`](docs/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permissions, trust |
@@ -400,8 +410,8 @@ Details → [`docs/development.md`](docs/development.md)
 ```bash
 # Without Make:
 python3 scripts/smoke_test.py
-# STDERR: ✅ Xcode MCP Server started — 31 tools
-# ✓ tools/list: 31 tools
+# STDERR: ✅ Xcode MCP Server started — 43 tools
+# ✓ tools/list: 43 tools
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 

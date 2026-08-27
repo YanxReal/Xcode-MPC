@@ -639,6 +639,187 @@ const TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: "asset_generate_appicon",
+    description:
+      "Genera la estructura completa de un AppIcon.appiconset para TODOS los OS de Apple (iOS, macOS, watchOS, tvOS, visionOS). Crea el Contents.json estándar y, si se proporciona una imagen base de 1024x1024, redimensiona automáticamente todos los tamaños usando sips de macOS.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xcassetsPath: { type: "string", description: "Ruta absoluta al catálogo .xcassets" },
+        iconName: { type: "string", description: "Nombre del asset (por defecto: 'AppIcon')" },
+        baseImagePath: { type: "string", description: "Ruta opcional a una imagen PNG de origen (1024x1024 px)" },
+        includeIos: { type: "boolean", description: "Incluir tamaños para iPhone e iPad (por defecto: true)" },
+        includeMacOs: { type: "boolean", description: "Incluir tamaños para macOS (por defecto: true)" },
+        includeWatchOs: { type: "boolean", description: "Incluir tamaños para watchOS (por defecto: true)" },
+        includeTvOs: { type: "boolean", description: "Incluir tamaños para tvOS (por defecto: true)" },
+        includeVisionOs: { type: "boolean", description: "Incluir tamaños para visionOS (por defecto: true)" },
+      },
+      required: ["xcassetsPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_resolve",
+    description: "Resuelve y descarga todas las dependencias de paquetes (Swift Package Manager / SPM) del proyecto.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: { type: "string", description: "Ruta al directorio raíz del proyecto o archivo .xcodeproj/.xcworkspace" },
+      },
+      required: ["projectPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_update",
+    description:
+      "Actualiza las dependencias de Swift Package Manager a las últimas versiones permitidas por sus reglas de versión.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: { type: "string", description: "Ruta al directorio del proyecto que contiene Package.swift o .xcodeproj" },
+      },
+      required: ["projectPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_list_dependencies",
+    description: "Muestra el árbol completo de dependencias de Swift Package Manager en formato JSON.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        packageDirectory: { type: "string", description: "Ruta al directorio que contiene el archivo Package.swift" },
+      },
+      required: ["packageDirectory"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_read_resolved",
+    description:
+      "Lee y analiza el archivo Package.resolved para inspeccionar los commits, tags y versiones exactas fijadas (pinned) en el proyecto.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        resolvedFilePath: {
+          type: "string",
+          description:
+            "Ruta absoluta al archivo Package.resolved (ej. TuProyecto.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved)",
+        },
+      },
+      required: ["resolvedFilePath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_reset_cache",
+    description: "Limpia las cachés locales de paquetes Swift de Xcode cuando hay problemas de resolución o corrupción de dependencias.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: { type: "string", description: "Ruta al proyecto o workspace" },
+      },
+      required: ["projectPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "package_compute_checksum",
+    description:
+      "Calcula el suma de comprobación (checksum) SHA-256 de un binario o XCFramework zip para publicar paquetes SPM locales o remotos.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        zipPath: { type: "string", description: "Ruta absoluta al archivo .zip del XCFramework o paquete" },
+      },
+      required: ["zipPath"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "spm_add_dependency",
+    description: "Añade programáticamente un paquete Swift de terceros al archivo Package.swift en el arreglo de dependencias.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        packageSwiftPath: { type: "string", description: "Ruta absoluta al archivo Package.swift" },
+        url: { type: "string", description: "URL del repositorio Git (ej. 'https://github.com/Alamofire/Alamofire.git')" },
+        requirement: {
+          type: "string",
+          description:
+            "Regla de versión de SwiftPM (ej. 'from: \"5.8.0\"', 'exact: \"1.2.3\"', '.upToNextMajor(from: \"2.0.0\")')",
+        },
+      },
+      required: ["packageSwiftPath", "url", "requirement"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "spm_remove_dependency",
+    description: "Elimina una dependencia del archivo Package.swift especificando el nombre o la URL del paquete.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        packageSwiftPath: { type: "string", description: "Ruta absoluta al archivo Package.swift" },
+        dependencyUrlOrName: { type: "string", description: "URL o nombre del paquete a remover" },
+      },
+      required: ["packageSwiftPath", "dependencyUrlOrName"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "cocoapods_manage",
+    description: "Ejecuta comandos de gestión de CocoaPods en proyectos heredados que utilizan Podfile.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: { type: "string", description: "Ruta al directorio que contiene el archivo Podfile" },
+        action: {
+          type: "string",
+          enum: ["install", "update", "deintegrate", "outdated"],
+          description: "Acción a ejecutar",
+        },
+        repoUpdate: { type: "boolean", description: "Ejecutar --repo-update durante install/update (por defecto: false)" },
+      },
+      required: ["projectPath", "action"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "carthage_manage",
+    description: "Gestión de dependencias para proyectos que utilizan Carthage (Cartfile).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: { type: "string", description: "Ruta al directorio del proyecto que contiene Cartfile" },
+        action: { type: "string", enum: ["update", "bootstrap", "build"], description: "Acción de Carthage a ejecutar" },
+        platform: { type: "string", description: "Plataforma objetivo (ej. 'iOS', 'macOS', 'all')" },
+        useXcframeworks: { type: "boolean", description: "Añade el flag --use-xcframeworks (por defecto: true)" },
+      },
+      required: ["projectPath", "action"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "cocoapods_to_spm_migrate",
+    description:
+      "Lee las dependencias de un archivo Podfile, extrae los pods con sus versiones o repositorios Git, los convierte a sintaxis .package(...) de SPM y los inyecta en Package.swift.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        podfilePath: { type: "string", description: "Ruta absoluta al archivo Podfile" },
+        packageSwiftPath: { type: "string", description: "Ruta absoluta al archivo Package.swift objetivo" },
+        dryRun: {
+          type: "boolean",
+          description: "Si es true, solo retorna la conversión en texto sin modificar Package.swift (por defecto: false)",
+        },
+      },
+      required: ["podfilePath", "packageSwiftPath"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1461,6 +1642,520 @@ async function handle_asset_validate_actool(args) {
   return textContent(text + (hasWarnings ? "\n\n⚠️ Revisa advertencias arriba." : "\n\n✅ Validación completada sin errores."));
 }
 
+async function handle_asset_generate_appicon(args) {
+  const xcassetsPath = expandTilde(args.xcassetsPath);
+  const iconName = (args.iconName || "AppIcon").trim();
+  if (!isValidAssetName(iconName)) return errorContent(`Nombre de AppIcon inválido: "${iconName}"`);
+  try {
+    await fs.access(xcassetsPath);
+  } catch {
+    return errorContent(`xcassetsPath no existe: ${xcassetsPath}`);
+  }
+  const appIconDir = path.join(xcassetsPath, `${iconName}.appiconset`);
+  try {
+    await fs.mkdir(appIconDir, { recursive: true });
+  } catch (e) {
+    return errorContent(`Falló al crear ${appIconDir}: ${e.message}`);
+  }
+  const includeIos = args.includeIos !== false;
+  const includeMacOs = args.includeMacOs !== false;
+  const includeWatchOs = args.includeWatchOs !== false;
+  const includeTvOs = args.includeTvOs !== false;
+  const includeVisionOs = args.includeVisionOs !== false;
+  const slots = [];
+  if (includeIos) {
+    slots.push(
+      { idiom: "iphone", size: "20x20", scale: "2x", pixels: 40 },
+      { idiom: "iphone", size: "20x20", scale: "3x", pixels: 60 },
+      { idiom: "iphone", size: "29x29", scale: "2x", pixels: 58 },
+      { idiom: "iphone", size: "29x29", scale: "3x", pixels: 87 },
+      { idiom: "iphone", size: "40x40", scale: "2x", pixels: 80 },
+      { idiom: "iphone", size: "40x40", scale: "3x", pixels: 120 },
+      { idiom: "iphone", size: "60x60", scale: "2x", pixels: 120 },
+      { idiom: "iphone", size: "60x60", scale: "3x", pixels: 180 },
+      { idiom: "ipad", size: "20x20", scale: "1x", pixels: 20 },
+      { idiom: "ipad", size: "20x20", scale: "2x", pixels: 40 },
+      { idiom: "ipad", size: "29x29", scale: "1x", pixels: 29 },
+      { idiom: "ipad", size: "29x29", scale: "2x", pixels: 58 },
+      { idiom: "ipad", size: "40x40", scale: "1x", pixels: 40 },
+      { idiom: "ipad", size: "40x40", scale: "2x", pixels: 80 },
+      { idiom: "ipad", size: "76x76", scale: "1x", pixels: 76 },
+      { idiom: "ipad", size: "76x76", scale: "2x", pixels: 152 },
+      { idiom: "ipad", size: "83.5x83.5", scale: "2x", pixels: 167 },
+      { idiom: "ios-marketing", size: "1024x1024", scale: "1x", pixels: 1024 }
+    );
+  }
+  if (includeMacOs) {
+    slots.push(
+      { idiom: "mac", size: "16x16", scale: "1x", pixels: 16 },
+      { idiom: "mac", size: "16x16", scale: "2x", pixels: 32 },
+      { idiom: "mac", size: "32x32", scale: "1x", pixels: 32 },
+      { idiom: "mac", size: "32x32", scale: "2x", pixels: 64 },
+      { idiom: "mac", size: "128x128", scale: "1x", pixels: 128 },
+      { idiom: "mac", size: "128x128", scale: "2x", pixels: 256 },
+      { idiom: "mac", size: "256x256", scale: "1x", pixels: 256 },
+      { idiom: "mac", size: "256x256", scale: "2x", pixels: 512 },
+      { idiom: "mac", size: "512x512", scale: "1x", pixels: 512 },
+      { idiom: "mac", size: "512x512", scale: "2x", pixels: 1024 }
+    );
+  }
+  if (includeWatchOs) {
+    slots.push(
+      { idiom: "watch", size: "40x40", scale: "2x", pixels: 80, role: "notificationCenter", subtype: "38mm" },
+      { idiom: "watch", size: "44x44", scale: "2x", pixels: 88, role: "notificationCenter", subtype: "42mm" },
+      { idiom: "watch", size: "50x50", scale: "2x", pixels: 100, role: "notificationCenter", subtype: "45mm" },
+      { idiom: "watch", size: "86x86", scale: "2x", pixels: 172, role: "quickLook", subtype: "38mm" },
+      { idiom: "watch", size: "98x98", scale: "2x", pixels: 196, role: "quickLook", subtype: "42mm" },
+      { idiom: "watch", size: "108x108", scale: "2x", pixels: 216, role: "quickLook", subtype: "45mm" },
+      { idiom: "watch", size: "1024x1024", scale: "1x", pixels: 1024, role: "watch-marketing" }
+    );
+  }
+  if (includeTvOs) {
+    slots.push(
+      { idiom: "tv", size: "400x240", scale: "1x", pixels: 400 },
+      { idiom: "tv", size: "400x240", scale: "2x", pixels: 800 },
+      { idiom: "tv", size: "1280x768", scale: "1x", pixels: 1280 },
+      { idiom: "tv", size: "1280x768", scale: "2x", pixels: 2560 }
+    );
+  }
+  if (includeVisionOs) {
+    slots.push(
+      { idiom: "vision", size: "1024x1024", scale: "1x", pixels: 1024 },
+      { idiom: "vision", size: "32x32", scale: "1x", pixels: 32 },
+      { idiom: "vision", size: "32x32", scale: "2x", pixels: 64 }
+    );
+  }
+  if (slots.length === 0) return errorContent("Debes incluir al menos un OS (iOS, macOS, watchOS, tvOS, visionOS)");
+  const imagesJson = [];
+  let resizedCount = 0;
+  let sipsMissing = false;
+  if (args.baseImagePath) {
+    const base = expandTilde(args.baseImagePath);
+    try {
+      await fs.access(base);
+    } catch {
+      return errorContent(`baseImagePath no existe: ${base}`);
+    }
+    const sipsCheck = await runCommand("which sips");
+    if (!sipsCheck.success) sipsMissing = true;
+  }
+  for (const slot of slots) {
+    const safeSize = slot.size.replace(".", "_");
+    const filename = `icon_${slot.idiom}_${safeSize}@${slot.scale}.png`;
+    const imageEntry = { size: slot.size, idiom: slot.idiom, filename, scale: slot.scale };
+    if (slot.role) imageEntry.role = slot.role;
+    if (slot.subtype) imageEntry.subtype = slot.subtype;
+    if (args.baseImagePath && !sipsMissing) {
+      const outPath = path.join(appIconDir, filename);
+      const base = expandTilde(args.baseImagePath);
+      const resizeCmd = `sips -z ${slot.pixels} ${slot.pixels} ${shellEscape(base)} --out ${shellEscape(outPath)} 2>&1`;
+      const r = await runCommand(resizeCmd);
+      if (r.success) resizedCount++;
+      else {
+        // Si falla sips, crear entrada igualmente sin archivo físico
+        imageEntry.filename = undefined;
+      }
+    }
+    imagesJson.push(imageEntry);
+  }
+  const contents = { images: imagesJson, info: { author: "xcode", version: 1 } };
+  await fs.writeFile(path.join(appIconDir, "Contents.json"), JSON.stringify(contents, null, 2), "utf-8");
+  let statusMsg;
+  if (args.baseImagePath) {
+    statusMsg = sipsMissing
+      ? `AppIcon '${iconName}' creado con ${imagesJson.length} slots (sips no disponible, sin redimensionar).`
+      : `AppIcon '${iconName}' creado con ${imagesJson.length} imágenes redimensionadas (${resizedCount}/${slots.length} OK) desde la base.`;
+  } else {
+    statusMsg = `Estructura AppIcon '${iconName}' creada con ${imagesJson.length} slots definidos en Contents.json (sin imagen base).`;
+  }
+  const osList = [
+    includeIos && "iOS",
+    includeMacOs && "macOS",
+    includeWatchOs && "watchOS",
+    includeTvOs && "tvOS",
+    includeVisionOs && "visionOS",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return textContent(`${statusMsg}\nOS incluidos: ${osList}\nRuta: ${appIconDir}\nSlots: ${slots.length}\n\n${JSON.stringify(contents, null, 2)}`);
+}
+
+async function handle_package_resolve(args) {
+  const projectPath = expandTilde(args.projectPath);
+  try {
+    await fs.access(projectPath);
+  } catch {
+    return errorContent(`projectPath no existe: ${projectPath}`);
+  }
+  try {
+    const pkgSwift = path.join(projectPath, "Package.swift");
+    const hasPkg = await fs.access(pkgSwift).then(() => true).catch(() => false);
+    let cmd;
+    if (hasPkg) {
+      cmd = `cd ${shellEscape(projectPath)} && swift package resolve 2>&1`;
+    } else {
+      const isWorkspace = projectPath.endsWith(".xcworkspace");
+      const isProject = projectPath.endsWith(".xcodeproj");
+      if (isWorkspace) cmd = `xcodebuild -resolvePackageDependencies -workspace ${shellEscape(projectPath)} 2>&1`;
+      else if (isProject) cmd = `xcodebuild -resolvePackageDependencies -project ${shellEscape(projectPath)} 2>&1`;
+      else {
+        // Intentar detectar workspace/project dentro del directorio
+        const entries = await fs.readdir(projectPath).catch(() => []);
+        const ws = entries.find((e) => e.endsWith(".xcworkspace"));
+        const proj = entries.find((e) => e.endsWith(".xcodeproj"));
+        if (ws) cmd = `xcodebuild -resolvePackageDependencies -workspace ${shellEscape(path.join(projectPath, ws))} 2>&1`;
+        else if (proj) cmd = `xcodebuild -resolvePackageDependencies -project ${shellEscape(path.join(projectPath, proj))} 2>&1`;
+        else cmd = `cd ${shellEscape(projectPath)} && swift package resolve 2>&1`;
+      }
+    }
+    const result = await runCommand(cmd);
+    const text = formatResult("📦 package resolve", result);
+    if (!result.success) return errorContent("Falló package resolve", text);
+    return textContent(text);
+  } catch (e) {
+    return errorContent(`Excepción en package_resolve: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_package_update(args) {
+  const projectPath = expandTilde(args.projectPath);
+  try {
+    await fs.access(projectPath);
+  } catch {
+    return errorContent(`projectPath no existe: ${projectPath}`);
+  }
+  try {
+    const pkgSwift = path.join(projectPath, "Package.swift");
+    const hasPkg = await fs.access(pkgSwift).then(() => true).catch(() => false);
+    let cmd;
+    if (hasPkg) {
+      cmd = `cd ${shellEscape(projectPath)} && swift package update 2>&1`;
+    } else {
+      const isWorkspace = projectPath.endsWith(".xcworkspace");
+      const isProject = projectPath.endsWith(".xcodeproj");
+      if (isWorkspace) cmd = `xcodebuild -resolvePackageDependencies -workspace ${shellEscape(projectPath)} 2>&1 && xcodebuild -updatePackageDependencies -workspace ${shellEscape(projectPath)} 2>&1`;
+      else if (isProject) cmd = `xcodebuild -updatePackageDependencies -project ${shellEscape(projectPath)} 2>&1`;
+      else {
+        const entries = await fs.readdir(projectPath).catch(() => []);
+        const ws = entries.find((e) => e.endsWith(".xcworkspace"));
+        const proj = entries.find((e) => e.endsWith(".xcodeproj"));
+        if (ws) cmd = `xcodebuild -updatePackageDependencies -workspace ${shellEscape(path.join(projectPath, ws))} 2>&1`;
+        else if (proj) cmd = `xcodebuild -updatePackageDependencies -project ${shellEscape(path.join(projectPath, proj))} 2>&1`;
+        else cmd = `cd ${shellEscape(projectPath)} && swift package update 2>&1`;
+      }
+    }
+    const result = await runCommand(cmd);
+    const text = formatResult("🔄 package update", result);
+    if (!result.success) return errorContent("Falló package update", text);
+    return textContent(text);
+  } catch (e) {
+    return errorContent(`Excepción en package_update: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_package_list_dependencies(args) {
+  const dir = expandTilde(args.packageDirectory);
+  try {
+    await fs.access(dir);
+  } catch {
+    return errorContent(`packageDirectory no existe: ${dir}`);
+  }
+  try {
+    const pkgPath = path.join(dir, "Package.swift");
+    await fs.access(pkgPath).catch(() => { throw new Error(`Package.swift no encontrado en ${dir}`); });
+    const cmd = `cd ${shellEscape(dir)} && swift package show-dependencies --format json 2>&1`;
+    const result = await runCommand(cmd);
+    if (!result.success) return errorContent("Falló swift package show-dependencies", formatResult("package_list_dependencies", result));
+    try {
+      const parsed = JSON.parse(result.stdout);
+      return textContent(JSON.stringify(parsed, null, 2));
+    } catch {
+      return textContent(result.stdout || "(sin salida JSON)");
+    }
+  } catch (e) {
+    return errorContent(`Excepción en package_list_dependencies: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_package_read_resolved(args) {
+  const filePath = expandTilde(args.resolvedFilePath);
+  try {
+    await fs.access(filePath);
+  } catch {
+    return errorContent(`resolvedFilePath no existe: ${filePath}`);
+  }
+  try {
+    const raw = await fs.readFile(filePath, "utf-8");
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      return errorContent(`Package.resolved no es JSON válido: ${e.message}`);
+    }
+    // Soporta formato v1/v2/v3
+    const pinsRaw = parsed.pins || parsed.object?.pins || [];
+    const pins = pinsRaw.map((p) => ({
+      identity: p.identity || p.package || p.name || "unknown",
+      location: p.location || p.repositoryURL || p.url || "",
+      version: p.state?.version || p.state?.selectedVersion || p.state?.revision || "N/A",
+      revision: p.state?.revision || "N/A",
+      branch: p.state?.branch || null,
+      kind: p.kind || p.state?.kind || null,
+    }));
+    const summary = { version: parsed.version ?? parsed.object?.version ?? 1, totalDependencies: pins.length, pins };
+    return textContent(JSON.stringify(summary, null, 2));
+  } catch (e) {
+    return errorContent(`Falló al leer Package.resolved: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_package_reset_cache(args) {
+  const projectPath = expandTilde(args.projectPath);
+  try {
+    await fs.access(projectPath);
+  } catch {
+    return errorContent(`projectPath no existe: ${projectPath}`);
+  }
+  const lines = [];
+  try {
+    const isWorkspace = projectPath.endsWith(".xcworkspace");
+    const isProject = projectPath.endsWith(".xcodeproj");
+    let cmd;
+    if (isWorkspace) cmd = `xcodebuild -resetPackageCaches -workspace ${shellEscape(projectPath)} 2>&1`;
+    else if (isProject) cmd = `xcodebuild -resetPackageCaches -project ${shellEscape(projectPath)} 2>&1`;
+    else {
+      const entries = await fs.readdir(projectPath).catch(() => []);
+      const ws = entries.find((e) => e.endsWith(".xcworkspace"));
+      const proj = entries.find((e) => e.endsWith(".xcodeproj"));
+      if (ws) cmd = `xcodebuild -resetPackageCaches -workspace ${shellEscape(path.join(projectPath, ws))} 2>&1`;
+      else if (proj) cmd = `xcodebuild -resetPackageCaches -project ${shellEscape(path.join(projectPath, proj))} 2>&1`;
+      else cmd = `xcodebuild -resetPackageCaches -project ${shellEscape(projectPath)} 2>&1`;
+    }
+    const r = await runCommand(cmd);
+    lines.push(formatResult("🧹 resetPackageCaches", r));
+  } catch (e) {
+    lines.push(`⚠️ xcodebuild reset falló: ${e.message}`);
+  }
+  const globalCache = path.join(os.homedir(), "Library/Caches/org.swift.swiftpm");
+  try {
+    await fs.rm(globalCache, { recursive: true, force: true });
+    lines.push(`✅ Caché global SPM borrada: ${globalCache}`);
+  } catch (e) {
+    lines.push(`⚠️ No se pudo borrar caché global: ${e.message}`);
+  }
+  // También intentar DerivedData SourcePackages
+  const derived = expandTilde("~/Library/Developer/Xcode/DerivedData");
+  try {
+    const cmd2 = `find ${shellEscape(derived)} -name "SourcePackages" -type d -maxdepth 3 2>/dev/null | head -n 5`;
+    const r2 = await runCommand(cmd2);
+    if (r2.stdout) lines.push(`SourcePackages encontrados:\n${r2.stdout}`);
+  } catch {}
+  return textContent(lines.join("\n\n"));
+}
+
+async function handle_package_compute_checksum(args) {
+  const zipPath = expandTilde(args.zipPath);
+  try {
+    await fs.access(zipPath);
+  } catch {
+    return errorContent(`zipPath no existe: ${zipPath}`);
+  }
+  if (!zipPath.endsWith(".zip")) return errorContent(`zipPath debe ser .zip: ${zipPath}`);
+  const cmd = `swift package compute-checksum ${shellEscape(zipPath)} 2>&1`;
+  const result = await runCommand(cmd);
+  if (!result.success) return errorContent("Falló swift package compute-checksum (¿swift 5.6+?)", formatResult("package_compute_checksum", result));
+  const checksum = result.stdout.trim().split(/\s+/).pop();
+  return textContent(JSON.stringify({ zipPath, checksum }, null, 2));
+}
+
+async function handle_spm_add_dependency(args) {
+  const pkgPath = expandTilde(args.packageSwiftPath);
+  const url = args.url?.trim();
+  const requirement = args.requirement?.trim();
+  if (!url || !requirement) return errorContent("url y requirement son requeridos");
+  try {
+    await fs.access(pkgPath);
+  } catch {
+    return errorContent(`Package.swift no existe: ${pkgPath}`);
+  }
+  try {
+    let content = await fs.readFile(pkgPath, "utf-8");
+    if (content.includes(url)) return textContent(`La dependencia '${url}' ya existe en Package.swift.`);
+    const newDependency = `.package(url: "${url}", ${requirement})`;
+    const dependenciesRegex = /(dependencies:\s*\[)([\s\S]*?)(\])/;
+    if (!dependenciesRegex.test(content)) return errorContent("No se pudo localizar un bloque 'dependencies: [...]' válido dentro de Package.swift.");
+    content = content.replace(dependenciesRegex, (match, p1, p2, p3) => {
+      const trimmedP2 = p2.trim();
+      const leadingSpaces = "        ";
+      if (trimmedP2.length === 0) return `${p1}\n${leadingSpaces}${newDependency}\n    ${p3}`;
+      return `${p1}${p2.replace(/\n$/, "")},\n${leadingSpaces}${newDependency}\n    ${p3}`;
+    });
+    await fs.writeFile(pkgPath, content, "utf-8");
+    return textContent(`Dependencia '${url}' agregada exitosamente a Package.swift.\n${newDependency}`);
+  } catch (e) {
+    return errorContent(`Falló al editar Package.swift: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_spm_remove_dependency(args) {
+  const pkgPath = expandTilde(args.packageSwiftPath);
+  const target = args.dependencyUrlOrName?.trim();
+  if (!target) return errorContent("dependencyUrlOrName requerido");
+  try {
+    await fs.access(pkgPath);
+  } catch {
+    return errorContent(`Package.swift no existe: ${pkgPath}`);
+  }
+  try {
+    let content = await fs.readFile(pkgPath, "utf-8");
+    const lines = content.split("\n");
+    const lower = target.toLowerCase();
+    const filtered = lines.filter((l) => !l.toLowerCase().includes(lower));
+    if (lines.length === filtered.length) return textContent(`No se encontró la dependencia '${target}' en Package.swift.`);
+    let newContent = filtered.join("\n").replace(/,\s*(\n\s*\])/g, "$1");
+    await fs.writeFile(pkgPath, newContent, "utf-8");
+    return textContent(`Dependencia '${target}' eliminada de Package.swift.`);
+  } catch (e) {
+    return errorContent(`Falló al eliminar dependencia: ${e.message}`, e.stack);
+  }
+}
+
+async function handle_cocoapods_manage(args) {
+  const projectPath = expandTilde(args.projectPath);
+  const action = args.action;
+  try {
+    await fs.access(projectPath);
+  } catch {
+    return errorContent(`projectPath no existe: ${projectPath}`);
+  }
+  const podfile = path.join(projectPath, "Podfile");
+  try {
+    await fs.access(podfile);
+  } catch {
+    return errorContent(`Podfile no encontrado en ${projectPath}`);
+  }
+  const hasPod = await xcrunExists("pod");
+  if (!hasPod) {
+    const which = await runCommand("which pod");
+    if (!which.stdout) return errorContent("CocoaPods no instalado (pod no encontrado). Instala con: sudo gem install cocoapods");
+  }
+  let cmd = `cd ${shellEscape(projectPath)} && pod ${shellEscape(action)}`;
+  if (args.repoUpdate && (action === "install" || action === "update")) cmd += " --repo-update";
+  cmd += " 2>&1";
+  const result = await runCommand(cmd, { timeout: 300000 });
+  const text = formatResult(`🍫 pod ${action}`, result);
+  if (!result.success) return errorContent(`Falló pod ${action}`, text);
+  return textContent(text);
+}
+
+async function handle_carthage_manage(args) {
+  const projectPath = expandTilde(args.projectPath);
+  const action = args.action;
+  try {
+    await fs.access(projectPath);
+  } catch {
+    return errorContent(`projectPath no existe: ${projectPath}`);
+  }
+  const cartfile = path.join(projectPath, "Cartfile");
+  try {
+    await fs.access(cartfile);
+  } catch {
+    return errorContent(`Cartfile no encontrado en ${projectPath}`);
+  }
+  if (!["update", "bootstrap", "build"].includes(action)) return errorContent(`Acción Carthage inválida: ${action}`);
+  const hasCarthage = await runCommand("which carthage");
+  if (!hasCarthage.success) return errorContent("Carthage no instalado. Instala con: brew install carthage");
+  let cmd = `cd ${shellEscape(projectPath)} && carthage ${shellEscape(action)}`;
+  if (args.platform) cmd += ` --platform ${shellEscape(args.platform)}`;
+  if (args.useXcframeworks !== false) cmd += " --use-xcframeworks";
+  cmd += " 2>&1";
+  const result = await runCommand(cmd, { timeout: 600000 });
+  const text = formatResult(`📦 carthage ${action}`, result);
+  if (!result.success) return errorContent(`Falló carthage ${action}`, text);
+  return textContent(text);
+}
+
+async function handle_cocoapods_to_spm_migrate(args) {
+  const podfilePath = expandTilde(args.podfilePath);
+  const packageSwiftPath = expandTilde(args.packageSwiftPath);
+  const dryRun = !!args.dryRun;
+  try {
+    await fs.access(podfilePath);
+  } catch {
+    return errorContent(`Podfile no existe: ${podfilePath}`);
+  }
+  try {
+    await fs.access(packageSwiftPath);
+  } catch {
+    return errorContent(`Package.swift no existe: ${packageSwiftPath}`);
+  }
+  try {
+    const podfileContent = await fs.readFile(podfilePath, "utf-8");
+    const podLines = podfileContent.split("\n");
+    const migratedPackages = [];
+    const podRegex = /pod\s+['"]([^'"]+)['"](?:\s*,\s*['"]([^'"]+)['"])?(?:\s*,\s*:git\s*=>\s*['"]([^'"]+)['"])?/;
+    for (const line of podLines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("#") || !trimmed.startsWith("pod")) continue;
+      const match = trimmed.match(podRegex);
+      if (!match) continue;
+      const podName = match[1];
+      const versionSpec = match[2];
+      const gitUrl = match[3];
+      let repoUrl = gitUrl || `https://github.com/${podName}/${podName}.git`;
+      // Heurística para pods populares con org distinta
+      const knownOrgs = {
+        Alamofire: "https://github.com/Alamofire/Alamofire.git",
+        SnapKit: "https://github.com/SnapKit/SnapKit.git",
+        SDWebImage: "https://github.com/SDWebImage/SDWebImage.git",
+        Realm: "https://github.com/realm/realm-swift.git",
+        RxSwift: "https://github.com/ReactiveX/RxSwift.git",
+      };
+      if (knownOrgs[podName]) repoUrl = knownOrgs[podName];
+      let requirement = 'from: "1.0.0"';
+      if (versionSpec) {
+        if (versionSpec.startsWith("~>")) {
+          const cleanVer = versionSpec.replace("~>", "").trim();
+          const parts = cleanVer.split(".");
+          if (parts.length === 2) requirement = `.upToNextMajor(from: "${cleanVer}.0")`;
+          else requirement = `.upToNextMinor(from: "${cleanVer}")`;
+        } else if (/^\d/.test(versionSpec)) {
+          requirement = `exact: "${versionSpec.trim()}"`;
+        } else {
+          const cleanVer = versionSpec.replace(/[=>~<]/g, "").trim();
+          requirement = `from: "${cleanVer}"`;
+        }
+      }
+      const spmString = `.package(url: "${repoUrl}", ${requirement})`;
+      migratedPackages.push({ podName, spmString, repoUrl });
+    }
+    if (migratedPackages.length === 0) return textContent("No se encontraron dependencias válidas de CocoaPods en el Podfile.");
+    if (dryRun) {
+      const summary = migratedPackages.map((p) => `// Pod: ${p.podName}\n${p.spmString}`).join("\n\n");
+      return textContent(`[Dry Run] Vista previa de la migración (${migratedPackages.length} pods):\n\n${summary}`);
+    }
+    let packageContent = await fs.readFile(packageSwiftPath, "utf-8");
+    let addedCount = 0;
+    for (const item of migratedPackages) {
+      if (packageContent.includes(item.repoUrl) || packageContent.toLowerCase().includes(item.podName.toLowerCase())) continue;
+      const dependenciesRegex = /(dependencies:\s*\[)([\s\S]*?)(\])/;
+      if (dependenciesRegex.test(packageContent)) {
+        packageContent = packageContent.replace(dependenciesRegex, (match, p1, p2, p3) => {
+          const trimmedP2 = p2.trim();
+          const leadingSpaces = "        ";
+          if (trimmedP2.length === 0) return `${p1}\n${leadingSpaces}${item.spmString}\n    ${p3}`;
+          return `${p1}${p2.replace(/\n$/, "")},\n${leadingSpaces}${item.spmString}\n    ${p3}`;
+        });
+        addedCount++;
+      }
+    }
+    if (addedCount > 0) await fs.writeFile(packageSwiftPath, packageContent, "utf-8");
+    return textContent(`Migración completada. Se procesaron ${migratedPackages.length} pods y se inyectaron ${addedCount} nuevas dependencias en Package.swift.${addedCount === 0 ? " (todas ya existían)" : ""}`);
+  } catch (e) {
+    return errorContent(`Falló migración Podfile→SPM: ${e.message}`, e.stack);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dispatcher
 // ---------------------------------------------------------------------------
@@ -1497,6 +2192,18 @@ const HANDLERS = {
   asset_read_info: handle_asset_read_info,
   asset_delete: handle_asset_delete,
   asset_validate_actool: handle_asset_validate_actool,
+  asset_generate_appicon: handle_asset_generate_appicon,
+  package_resolve: handle_package_resolve,
+  package_update: handle_package_update,
+  package_list_dependencies: handle_package_list_dependencies,
+  package_read_resolved: handle_package_read_resolved,
+  package_reset_cache: handle_package_reset_cache,
+  package_compute_checksum: handle_package_compute_checksum,
+  spm_add_dependency: handle_spm_add_dependency,
+  spm_remove_dependency: handle_spm_remove_dependency,
+  cocoapods_manage: handle_cocoapods_manage,
+  carthage_manage: handle_carthage_manage,
+  cocoapods_to_spm_migrate: handle_cocoapods_to_spm_migrate,
 };
 
 // ---------------------------------------------------------------------------
@@ -1506,7 +2213,7 @@ const HANDLERS = {
 const server = new Server(
   {
     name: "xcode-mcp-server",
-    version: "1.1.0",
+    version: "1.2.0",
   },
   {
     capabilities: {
@@ -1538,7 +2245,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("✅ Xcode MCP Server iniciado (stdio) — 31 herramientas registradas");
+  console.error("✅ Xcode MCP Server iniciado (stdio) — 43 herramientas registradas");
 }
 
 main().catch((err) => {

@@ -4,14 +4,14 @@
 
 **Servidor Model Context Protocol para el ecosistema Apple**
 
-*Conecta OpenCode, Codex y Claude Code con Xcode — 31 herramientas profesionales en un solo `index.js`*
+*Conecta OpenCode, Codex y Claude Code con Xcode — 43 herramientas profesionales en un solo `index.js`*
 
 [![CI](https://github.com/YanxReal/Xcode-MPC/actions/workflows/ci.yml/badge.svg)](https://github.com/YanxReal/Xcode-MPC/actions)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Yarn 4](https://img.shields.io/badge/yarn-4.18-2C8EBB?logo=yarn&logoColor=white)](https://yarnpkg.com)
 [![MCP](https://img.shields.io/badge/MCP-Stdio_Transport-7B68EE)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](package.json)
 
 > 🌐 **Idioma:** [English](README.md) | **Español**
 
@@ -33,7 +33,7 @@
 <summary><strong>¿Por qué este servidor y no otro?</strong></summary>
 
 - ✅ **Single-file `index.js` (1220 líneas)** — sin build, sin compilar, auditable en 1 archivo. Shebang `#!/usr/bin/env node`, listo para `node`, `yarn start` o `npx`.
-- ✅ **31 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
+- ✅ **43 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
 - ✅ **Cobertura Apple total:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
 - ✅ **DX moderna:** Yarn 4 vendorizado (`.yarn/releases`), `Makefile` con `help` autodocumentado, `docs/` modular, CI macOS + `make test` smoke.
 - ✅ **Multi-cliente:** mismo `index.js` funciona en **OpenCode**, **Codex** y **Claude Code** sin cambios.
@@ -55,6 +55,8 @@
 | **Editor** | 2 | `xcode_get_active_file` (AppleScript), `xcode_open_at_line` (`xed` → `xcode://`) |
 | **Localización** | 1 | `xcode_sync_strings` (`.xcstrings` → missing/pending/empty) |
 | **Assets** | 6 | `asset_list_contents`, `asset_manage_color` (Light/Dark), `asset_manage_image` (1x/2x/3x/vector), `asset_read_info`, `asset_delete`, `asset_validate_actool` (`actool`) |
+| **AppIcon** | 1 | `asset_generate_appicon` (TODOS los OS: iOS, macOS, watchOS, tvOS, visionOS + `sips`) |
+| **Paquetes / SPM** | 11 | `package_resolve`, `package_update`, `package_list_dependencies`, `package_read_resolved`, `package_reset_cache`, `package_compute_checksum`, `spm_add_dependency`, `spm_remove_dependency`, `cocoapods_manage`, `carthage_manage`, `cocoapods_to_spm_migrate` |
 
 ---
 
@@ -181,7 +183,7 @@ make lint
 
 make test
 # ➜ smoke test MCP...
-# ✓ tools/list: 31 herramientas
+# ✓ tools/list: 43 herramientas
 # ✓ xcode_sync_strings OK
 # ✓ xcode_certificates_check OK
 # ✓ smoke test PASSED
@@ -218,10 +220,10 @@ Reinicia OpenCode / Codex / Claude Code y escribe:
 lista las herramientas de xcode
 ```
 
-Debes ver **31 herramientas** y en el log:
+Debes ver **43 herramientas** y en el log:
 
 ```
-✅ Xcode MCP Server iniciado (stdio) — 31 herramientas registradas
+✅ Xcode MCP Server iniciado (stdio) — 43 herramientas registradas
 ```
 
 ¡Listo! Ya puedes decir:
@@ -288,7 +290,7 @@ args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
 claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 # verifica
 claude mcp list
-# xcode: connected — 31 tools
+# xcode: connected — 43 tools
 ```
 
 O por proyecto con `.mcp.json`:
@@ -356,6 +358,14 @@ O por proyecto con `.mcp.json`:
 
 `asset_list_contents` (lista `*.colorset/*.imageset`), `asset_manage_color` (`#RRGGBB` Light + Dark), `asset_manage_image` (escalas/vector + `preserves-vector-representation`), `asset_read_info` (`Contents.json`), `asset_delete` (seguro), `asset_validate_actool` (`xcrun actool --compile`)
 
+### 10. AppIcon TODOS los OS (1)
+
+`asset_generate_appicon` (iOS, macOS, watchOS, tvOS, visionOS — 42 slots, `sips -z` si hay `baseImagePath`)
+
+### 11. Paquetes SPM / CocoaPods / Carthage (11)
+
+`package_resolve`/`update`/`list`/`read_resolved`/`reset_cache`/`compute_checksum`, `spm_add/remove_dependency`, `cocoapods_manage`, `carthage_manage`, `cocoapods_to_spm_migrate` (Podfile→Package.swift)
+
 > Referencia completa con JSON Schema + ejemplos copiables → [`docs/es/tools.md`](docs/es/tools.md)
 
 ---
@@ -368,7 +378,7 @@ make install       # yarn install + chmod +x
 make reinstall     # clean + install (desde cero)
 make lint          # node --check index.js
 make doctor        # Verifica Node/Yarn/Xcode/simctl/swiftlint/osascript
-make test          # Smoke test MCP (31 tools + 2 calls)
+make test          # Smoke test MCP (43 tools + 2 calls)
 make start         # yarn start (stdio)
 make dev           # yarn dev (--watch)
 make inspect       # Inspector MCP en http://localhost:6274
@@ -386,7 +396,7 @@ Detalles → [`docs/es/development.md`](docs/es/development.md)
 | Doc | Para quién | Qué cubre |
 |---|---|---|
 | [`installation.md`](docs/es/installation.md) | Todos | Yarn Berry, Corepack, `yarnPath` vendorizado, troubleshooting |
-| [`tools.md`](docs/es/tools.md) | LLM / Dev | Las 31 tools, JSON Schema, ejemplos JSON listos para copiar |
+| [`tools.md`](docs/es/tools.md) | LLM / Dev | Las 43 tools, JSON Schema, ejemplos JSON listos para copiar |
 | [`opencode.md`](docs/es/opencode.md) | OpenCode | `opencode.json` global/local, prompts, env `DEVELOPER_DIR` |
 | [`codex.md`](docs/es/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
 | [`claude-code.md`](docs/es/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
@@ -400,8 +410,8 @@ Detalles → [`docs/es/development.md`](docs/es/development.md)
 ```bash
 # Sin Make:
 python3 scripts/smoke_test.py
-# STDERR: ✅ Xcode MCP Server iniciado — 31 herramientas
-# ✓ tools/list: 31 herramientas
+# STDERR: ✅ Xcode MCP Server iniciado — 43 herramientas
+# ✓ tools/list: 43 herramientas
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 
