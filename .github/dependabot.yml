@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # Yarn dependencies (package.json + yarn.lock)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    reviewers:
+      - "YanxReal"
+    # Group minor/patch to reduce noise
+    groups:
+      mcp-sdk:
+        patterns:
+          - "@modelcontextprotocol/*"
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions (ci.yml)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
