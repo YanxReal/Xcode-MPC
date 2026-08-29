@@ -4,18 +4,18 @@
 
 **Servidor Model Context Protocol para el ecosistema Apple**
 
-*Conecta OpenCode, Codex y Claude Code con Xcode — 47 herramientas profesionales en un solo `index.js`*
+*Conecta OpenCode, Codex y Claude Code con Xcode — 52 herramientas profesionales en un solo `index.js`*
 
 [![CI](https://github.com/YanxReal/Xcode-MPC/actions/workflows/ci.yml/badge.svg)](https://github.com/YanxReal/Xcode-MPC/actions)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Yarn 4](https://img.shields.io/badge/yarn-4.18-2C8EBB?logo=yarn&logoColor=white)](https://yarnpkg.com)
 [![MCP](https://img.shields.io/badge/MCP-Stdio_Transport-7B68EE)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](package.json)
 
 > 🌐 **Idioma:** [English](README.md) | **Español**
 
-[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-47) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
+[Instalación](#-instalación-paso-a-paso) • [Herramientas](#-herramientas-52) • [OpenCode](docs/es/opencode.md) • [Codex](docs/es/codex.md) • [Claude Code](docs/es/claude-code.md) • [Docs](docs/es/architecture.md)
 
 </div>
 
@@ -33,7 +33,7 @@
 <summary><strong>¿Por qué este servidor y no otro?</strong></summary>
 
 - ✅ **Single-file `index.js` (2250 líneas)** — sin build, sin compilar, auditable en 1 archivo. Shebang `#!/usr/bin/env node`, listo para `node`, `yarn start` o `npx`.
-- ✅ **47 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
+- ✅ **52 herramientas con JSON Schema estricto** (`additionalProperties:false`) + `try/catch` global. Cada tool retorna `content: [{type:"text"}]` y `isError:true` en fallos — nada de `// TODO`.
 - ✅ **Cobertura Apple total:** `xcodebuild`, `simctl` (9), `devicectl` (2), `xctrace` (5 templates), `agvtool`, `security`, `osascript/xed`.
 - ✅ **DX moderna:** Yarn 4 vendorizado (`.yarn/releases`), `Makefile` con `help` autodocumentado, `docs/` modular, CI macOS + `make test` smoke.
 - ✅ **Multi-cliente:** mismo `index.js` funciona en **OpenCode**, **Codex** y **Claude Code** sin cambios.
@@ -58,6 +58,7 @@
 | **AppIcon** | 1 | `asset_generate_appicon` (TODOS los OS: iOS, macOS, watchOS, tvOS, visionOS + `sips`) |
 | **Paquetes / SPM** | 11 | `package_resolve`, `package_update`, `package_list_dependencies`, `package_read_resolved`, `package_reset_cache`, `package_compute_checksum`, `spm_add_dependency`, `spm_remove_dependency`, `cocoapods_manage`, `carthage_manage`, `cocoapods_to_spm_migrate` |
 | **Visión/UI** | 4 | `simctl_get_screen_analysis` (sips + `imagePath`), `simctl_inspect_ui_tree` (árbol accesibilidad), `simctl_tap_by_text` (tap inteligente), `simctl_fill_field` (type inteligente) |
+| **Simctl Extra** | 5 | `simctl_set_appearance` (light/dark), `simctl_set_dynamic_type` (Dynamic Type), `simctl_manage_storekit` (load/clear/buy/refund), `simctl_simulate_event` (call/network), `simctl_send_push` (APNs objeto) |
 
 ---
 
@@ -67,7 +68,7 @@
 2. [Instalación paso a paso](#-instalación-paso-a-paso)
 3. [Verificación](#-verificación)
 4. [Uso con OpenCode / Codex / Claude Code](#-uso-con-opencode--codex--claude-code)
-5. [Herramientas (47)](#-herramientas-47)
+5. [Herramientas (52)](#-herramientas-52)
 6. [Comandos Make](#-comandos-make)
 7. [Documentación](#-documentación)
 8. [Arquitectura](#-arquitectura)
@@ -184,7 +185,7 @@ make lint
 
 make test
 # ➜ smoke test MCP...
-# ✓ tools/list: 47 herramientas
+# ✓ tools/list: 52 herramientas
 # ✓ xcode_sync_strings OK
 # ✓ xcode_certificates_check OK
 # ✓ smoke test PASSED
@@ -221,10 +222,10 @@ Reinicia OpenCode / Codex / Claude Code y escribe:
 lista las herramientas de xcode
 ```
 
-Debes ver **47 herramientas** y en el log:
+Debes ver **52 herramientas** y en el log:
 
 ```
-✅ Xcode MCP Server iniciado (stdio) — 47 herramientas registradas
+✅ Xcode MCP Server iniciado (stdio) — 52 herramientas registradas
 ```
 
 ¡Listo! Ya puedes decir:
@@ -291,7 +292,7 @@ args = ["/Users/YanxReal/Dev/Tools/Xcode-MPC/index.js"]
 claude mcp add xcode -- node /Users/YanxReal/Dev/Tools/Xcode-MPC/index.js
 # verifica
 claude mcp list
-# xcode: connected — 47 tools
+# xcode: connected — 52 tools
 ```
 
 O por proyecto con `.mcp.json`:
@@ -311,7 +312,7 @@ O por proyecto con `.mcp.json`:
 
 ---
 
-## 🛠️ Herramientas (47)
+## 🛠️ Herramientas (52)
 
 ### 1. Compilación, Diagnóstico y Limpieza
 
@@ -371,6 +372,10 @@ O por proyecto con `.mcp.json`:
 
 `simctl_get_screen_analysis` (sips → `imagePath` + `resolution` para Vision LLM), `simctl_inspect_ui_tree` (árbol accesibilidad con `center`), `simctl_tap_by_text` (`Exact`+`partial` + click centro), `simctl_fill_field` (`clearFirst` + `keystroke`)
 
+### 13. Simctl Extra (5)
+
+`simctl_set_appearance` (light/dark — `xcrun simctl ui appearance`), `simctl_set_dynamic_type` (Dynamic Type 12 categorías), `simctl_manage_storekit` (`load`/`clear`/`buy`/`refund`), `simctl_simulate_event` (`incoming_call`/`network_offline`/`online`), `simctl_send_push` (APNs objeto → `simctl push`)
+
 > Referencia completa con JSON Schema + ejemplos copiables → [`docs/es/tools.md`](docs/es/tools.md)
 
 ---
@@ -383,7 +388,7 @@ make install       # yarn install + chmod +x
 make reinstall     # clean + install (desde cero)
 make lint          # node --check index.js
 make doctor        # Verifica Node/Yarn/Xcode/simctl/swiftlint/osascript
-make test          # Smoke test MCP (47 tools + 2 calls)
+make test          # Smoke test MCP (52 tools + 2 calls)
 make start         # yarn start (stdio)
 make dev           # yarn dev (--watch)
 make inspect       # Inspector MCP en http://localhost:6274
@@ -401,7 +406,7 @@ Detalles → [`docs/es/development.md`](docs/es/development.md)
 | Doc | Para quién | Qué cubre |
 |---|---|---|
 | [`installation.md`](docs/es/installation.md) | Todos | Yarn Berry, Corepack, `yarnPath` vendorizado, troubleshooting |
-| [`tools.md`](docs/es/tools.md) | LLM / Dev | Las 47 tools, JSON Schema, ejemplos JSON listos para copiar |
+| [`tools.md`](docs/es/tools.md) | LLM / Dev | Las 52 tools, JSON Schema, ejemplos JSON listos para copiar |
 | [`opencode.md`](docs/es/opencode.md) | OpenCode | `opencode.json` global/local, prompts, env `DEVELOPER_DIR` |
 | [`codex.md`](docs/es/codex.md) | Codex | `config.toml` (`mcp_servers.xcode`), `codex mcp list` |
 | [`claude-code.md`](docs/es/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
@@ -415,8 +420,8 @@ Detalles → [`docs/es/development.md`](docs/es/development.md)
 ```bash
 # Sin Make:
 python3 scripts/smoke_test.py
-# STDERR: ✅ Xcode MCP Server iniciado — 47 herramientas
-# ✓ tools/list: 47 herramientas
+# STDERR: ✅ Xcode MCP Server iniciado — 52 herramientas
+# ✓ tools/list: 52 herramientas
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 
@@ -432,8 +437,8 @@ make test
 index.js (2250 líneas, 1 archivo)
 ├── Shebang + Imports (MCP SDK, promisify(exec), fs, path, os)
 ├── Helpers: shellEscape, expandTilde, runCommand (try/catch + 10MB buffer), formatResult
-├── TOOLS[47]: JSON Schema estricto (additionalProperties:false)
-├── Handlers[47]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
+├── TOOLS[52]: JSON Schema estricto (additionalProperties:false)
+├── Handlers[52]: async handle_* con validación + fallbacks (xed→xcode://, swift-format→swiftlint)
 ├── Dispatcher: HANDLERS map + ListTools/CallTool (try/catch → isError:true)
 └── Server: StdioServerTransport (stdin JSON-RPC, stdout JSON-RPC, stderr logs)
 ```

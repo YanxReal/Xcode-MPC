@@ -878,6 +878,118 @@ const TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: "simctl_set_appearance",
+    description: "Cambia el tema visual del simulador de iOS alternando entre Modo Claro (light) y Modo Oscuro (dark).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        appearance: {
+          type: "string",
+          enum: ["light", "dark"],
+          description: "Tema deseado: 'light' para Modo Claro o 'dark' para Modo Oscuro.",
+        },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: 'booted')" },
+      },
+      required: ["appearance"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_set_dynamic_type",
+    description:
+      "Ajusta el tamaño de texto dinámico (Dynamic Type / Content Size Category) en el simulador de iOS para probar accesibilidad y layouts adaptativos.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sizeCategory: {
+          type: "string",
+          enum: [
+            "extra-small",
+            "small",
+            "medium",
+            "large",
+            "extra-large",
+            "extra-extra-large",
+            "extra-extra-extra-large",
+            "accessibility-medium",
+            "accessibility-large",
+            "accessibility-extra-large",
+            "accessibility-extra-extra-large",
+            "accessibility-extra-extra-extra-large",
+          ],
+          description: "Categoría de tamaño de texto de Dynamic Type (estándar o accesibilidad).",
+        },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: 'booted')" },
+      },
+      required: ["sizeCategory"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_manage_storekit",
+    description:
+      "Carga archivos de configuración .storekit en el simulador de iOS y simula compras integradas (In-App Purchases), renovaciones de suscripciones o reembolsos.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["load", "clear", "buy", "refund"],
+          description:
+            "Acción a realizar: 'load' (cargar archivo .storekit), 'clear' (limpiar configuración), 'buy' (simular compra de un producto), 'refund' (simular reembolso).",
+        },
+        storekitPath: { type: "string", description: "Ruta absoluta al archivo .storekit (requerido para la acción 'load')" },
+        productId: {
+          type: "string",
+          description: "Identificador del producto o suscripción (ej. 'com.miApp.premium.mensual') (requerido para 'buy' y 'refund')",
+        },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: 'booted')" },
+      },
+      required: ["action"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_simulate_event",
+    description:
+      "Simula eventos del sistema en el simulador de iOS, tales como llamadas entrantes/mensajes telefónicos o alternar el estado de conexión a internet (red offline/online).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        eventType: {
+          type: "string",
+          enum: ["incoming_call", "network_offline", "network_online"],
+          description:
+            "Tipo de evento a simular: 'incoming_call' (despierta el diálogo/marcador de llamada), 'network_offline' (desactiva indicadores de datos y Wi-Fi), 'network_online' (restablece el estado normal de la red).",
+        },
+        phoneNumber: { type: "string", description: "Número telefónico a simular para la llamada (opcional, por defecto: '+18005550199')" },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: 'booted')" },
+      },
+      required: ["eventType"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "simctl_send_push",
+    description:
+      "Envía una notificación push remota (APNs) simulada a una aplicación en el simulador de iOS utilizando un payload JSON (objeto, soporta también string).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        bundleId: {
+          type: "string",
+          description: "Identificador del paquete de la aplicación (Bundle Identifier), ej: 'com.ejemplo.miApp'",
+        },
+        jsonPayload: {
+          description: "Objeto JSON con la estructura estándar de APNs (debe contener al menos la clave 'aps' con 'alert', 'badge', 'sound', etc.)",
+        },
+        udid: { type: "string", description: "UDID del simulador o 'booted' (por defecto: 'booted')" },
+      },
+      required: ["bundleId", "jsonPayload"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -2535,6 +2647,152 @@ async function handle_simctl_fill_field(args) {
   }
 }
 
+async function handle_simctl_set_appearance(args) {
+  const udid = args.udid || "booted";
+  const appearance = args.appearance;
+  if (!["light", "dark"].includes(appearance)) return errorContent(`appearance inválido: ${appearance} (usa light/dark)`);
+  const cmd = `xcrun simctl ui ${shellEscape(udid)} appearance ${shellEscape(appearance)} 2>&1`;
+  const result = await runCommand(cmd);
+  const text = formatResult(`🌓 simctl ui appearance ${appearance} (${udid})`, result);
+  if (!result.success) return errorContent(`Falló simctl ui appearance ${appearance}`, text);
+  const modeText = appearance === "dark" ? "Oscuro" : "Claro";
+  return textContent(text + `\n\n✅ Tema del simulador cambiado exitosamente a Modo ${modeText} (${appearance}).`);
+}
+
+async function handle_simctl_set_dynamic_type(args) {
+  const udid = args.udid || "booted";
+  const sizeCategory = args.sizeCategory;
+  const allowed = [
+    "extra-small",
+    "small",
+    "medium",
+    "large",
+    "extra-large",
+    "extra-extra-large",
+    "extra-extra-extra-large",
+    "accessibility-medium",
+    "accessibility-large",
+    "accessibility-extra-large",
+    "accessibility-extra-extra-large",
+    "accessibility-extra-extra-extra-large",
+  ];
+  if (!allowed.includes(sizeCategory)) return errorContent(`sizeCategory inválido: ${sizeCategory}. Valores: ${allowed.join(", ")}`);
+  const cmd = `xcrun simctl ui ${shellEscape(udid)} content-size ${shellEscape(sizeCategory)} 2>&1`;
+  const result = await runCommand(cmd);
+  const text = formatResult(`🔤 simctl ui content-size ${sizeCategory} (${udid})`, result);
+  if (!result.success) {
+    if (result.stderr.includes("unrecognized") || result.stderr.includes("unknown")) {
+      return errorContent(`simctl content-size no soportado en este Xcode (¿Xcode 15+?) — sizeCategory: ${sizeCategory}`, text);
+    }
+    return errorContent(`Falló simctl ui content-size ${sizeCategory}`, text);
+  }
+  return textContent(text + `\n\n✅ Tamaño de texto dinámico (Dynamic Type) cambiado exitosamente a '${sizeCategory}'.`);
+}
+
+async function handle_simctl_manage_storekit(args) {
+  const udid = args.udid || "booted";
+  const action = args.action;
+  let cmd;
+  if (action === "load") {
+    if (!args.storekitPath) return errorContent("Debes proporcionar storekitPath para la acción 'load'");
+    const p = expandTilde(args.storekitPath);
+    try {
+      await fs.access(p);
+    } catch {
+      return errorContent(`storekitPath no existe: ${p}`);
+    }
+    if (!p.endsWith(".storekit")) return errorContent(`storekitPath debe terminar en .storekit: ${p}`);
+    cmd = `xcrun simctl storekit ${shellEscape(udid)} load ${shellEscape(p)} 2>&1`;
+  } else if (action === "clear") {
+    cmd = `xcrun simctl storekit ${shellEscape(udid)} clear 2>&1`;
+  } else if (action === "buy") {
+    if (!args.productId) return errorContent("Debes indicar productId a comprar");
+    if (!/^[a-zA-Z0-9._-]+$/.test(args.productId)) return errorContent(`productId inválido: ${args.productId}`);
+    cmd = `xcrun simctl storekit ${shellEscape(udid)} buy ${shellEscape(args.productId)} 2>&1`;
+  } else if (action === "refund") {
+    if (!args.productId) return errorContent("Debes indicar productId a reembolsar");
+    cmd = `xcrun simctl storekit ${shellEscape(udid)} refund ${shellEscape(args.productId)} 2>&1`;
+  } else {
+    return errorContent(`Acción StoreKit desconocida: ${action}`);
+  }
+  const result = await runCommand(cmd);
+  const text = formatResult(`🛒 simctl storekit ${action} (${udid})`, result);
+  if (!result.success) return errorContent(`Falló StoreKit ${action}`, text);
+  const msgMap = {
+    load: `Archivo StoreKit cargado: ${args.storekitPath}`,
+    clear: "Configuración StoreKit limpiada",
+    buy: `Compra simulada: ${args.productId}`,
+    refund: `Reembolso simulado: ${args.productId}`,
+  };
+  return textContent(text + `\n\n✅ Acción StoreKit '${action}' ejecutada correctamente. ${msgMap[action] || ""}`);
+}
+
+async function handle_simctl_simulate_event(args) {
+  const udid = args.udid || "booted";
+  const eventType = args.eventType;
+  let cmd;
+  let message = "";
+  if (eventType === "incoming_call") {
+    const phone = args.phoneNumber || "+18005550199";
+    // Validar teléfono simple
+    if (!/^[+0-9\-\s()]+$/.test(phone)) return errorContent(`phoneNumber inválido: ${phone}`);
+    const sanitized = phone.replace(/[^+0-9]/g, "");
+    cmd = `xcrun simctl openurl ${shellEscape(udid)} ${shellEscape(`tel://${sanitized}`)} 2>&1`;
+    message = `Simulación de llamada entrante iniciada para el número ${sanitized}.`;
+  } else if (eventType === "network_offline") {
+    cmd = `xcrun simctl status_bar ${shellEscape(udid)} override --dataNetwork off --wifiMode failed --wifiBars 0 --cellularMode disconnected --cellularBars 0 2>&1`;
+    message = "Simulación de red sin conexión (OFFLINE) activada en la barra de estado e interfaz.";
+  } else if (eventType === "network_online") {
+    cmd = `xcrun simctl status_bar ${shellEscape(udid)} clear 2>&1`;
+    message = "Estado de red restablecido a ONLINE (red normal).";
+  } else {
+    return errorContent(`eventType desconocido: ${eventType}`);
+  }
+  const result = await runCommand(cmd);
+  const text = formatResult(`📡 simctl simulate ${eventType} (${udid})`, result);
+  if (!result.success) return errorContent(`Falló simulación de evento ${eventType}`, text);
+  return textContent(text + `\n\n✅ ${message}`);
+}
+
+async function handle_simctl_send_push(args) {
+  const udid = args.udid || "booted";
+  const bundleId = args.bundleId?.trim();
+  if (!bundleId) return errorContent("bundleId es requerido");
+  if (!/^[a-zA-Z0-9._-]+$/.test(bundleId)) return errorContent(`bundleId inválido: ${bundleId}`);
+  let payloadStr;
+  const payloadRaw = args.jsonPayload;
+  if (typeof payloadRaw === "string") {
+    payloadStr = payloadRaw;
+    try {
+      JSON.parse(payloadStr);
+    } catch (e) {
+      return errorContent(`jsonPayload string no es JSON válido: ${e.message}`);
+    }
+  } else if (typeof payloadRaw === "object" && payloadRaw !== null) {
+    payloadStr = JSON.stringify(payloadRaw, null, 2);
+  } else {
+    return errorContent("jsonPayload debe ser objeto o string JSON");
+  }
+  // Validar que contiene aps
+  try {
+    const parsed = JSON.parse(payloadStr);
+    if (!parsed.aps) return errorContent("jsonPayload debe contener clave 'aps' (APNs standard)");
+  } catch {}
+  const tmp = path.join(os.tmpdir(), `push_payload_${Date.now()}.json`);
+  try {
+    await fs.writeFile(tmp, payloadStr, "utf-8");
+    const cmd = `xcrun simctl push ${shellEscape(udid)} ${shellEscape(bundleId)} ${shellEscape(tmp)} 2>&1`;
+    const result = await runCommand(cmd);
+    await fs.unlink(tmp).catch(() => {});
+    const text = formatResult(`🔔 simctl push ${bundleId} (${udid})`, result);
+    if (!result.success) return errorContent(`Falló envío de push a ${bundleId}`, text);
+    return textContent(text + `\n\n✅ Notificación push enviada exitosamente a la app '${bundleId}'.\nPayload:\n${payloadStr}`);
+  } catch (e) {
+    await fs.unlink(tmp).catch(() => {});
+    return errorContent(`Excepción en simctl_send_push: ${e.message}`, e.stack);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dispatcher
 // ---------------------------------------------------------------------------
@@ -2587,6 +2845,11 @@ const HANDLERS = {
   simctl_inspect_ui_tree: handle_simctl_inspect_ui_tree,
   simctl_tap_by_text: handle_simctl_tap_by_text,
   simctl_fill_field: handle_simctl_fill_field,
+  simctl_set_appearance: handle_simctl_set_appearance,
+  simctl_set_dynamic_type: handle_simctl_set_dynamic_type,
+  simctl_manage_storekit: handle_simctl_manage_storekit,
+  simctl_simulate_event: handle_simctl_simulate_event,
+  simctl_send_push: handle_simctl_send_push,
 };
 
 // ---------------------------------------------------------------------------
@@ -2596,7 +2859,7 @@ const HANDLERS = {
 const server = new Server(
   {
     name: "xcode-mcp-server",
-    version: "1.3.0",
+    version: "1.4.0",
   },
   {
     capabilities: {
@@ -2628,7 +2891,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("✅ Xcode MCP Server iniciado (stdio) — 47 herramientas registradas");
+  console.error("✅ Xcode MCP Server iniciado (stdio) — 52 herramientas registradas");
 }
 
 main().catch((err) => {

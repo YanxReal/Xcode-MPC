@@ -32,12 +32,12 @@ This repo is **bilingual by design**:
 **Verification (run before commit):**
 ```bash
 # Both READMEs must have same tool count
-grep -c "47 tools" README.md
-grep -c "47 herramientas" README.es.md
+grep -c "52 tools" README.md
+grep -c "52 herramientas" README.es.md
 # Both docs sets must exist
 ls docs/*.md docs/es/*.md
-# No 25/31/43 leftovers
-grep -r "25 tools\|31 tools\|43 tools" --include="*.md" docs/ README* && echo "FAIL: stale count" || echo "OK"
+# No 25/31/43/47 leftovers
+grep -r "25 tools\|31 tools\|43 tools\|47 tools" --include="*.md" docs/ README* && echo "FAIL: stale count" || echo "OK"
 ```
 
 ---
@@ -68,11 +68,11 @@ Same for `README.md` ↔ `README.es.md`.
 ### 3.2 Adding a New Tool
 1. Define in `TOOLS` (`index.js:142` area) with JSON Schema.
 2. Implement `handle_new_tool` before `// Dispatcher` with validation, `fs.access`, `shellEscape`, and `return textContent` / `errorContent`.
-3. Register in `HANDLERS` map and bump `Server version` (`1.3.0` → `1.3.1` for patch, `1.4.0` for feature) and log `47→48 herramientas registradas`.
-4. Update `package.json:version` + `description` (`47 herramientas`).
+3. Register in `HANDLERS` map and bump `Server version` (`1.4.0` → `1.4.1` for patch, `1.5.0` for feature) and log `52→53 herramientas registradas`.
+4. Update `package.json:version` + `description` (`52 herramientas`).
 5. Update **both** `README.md` + `README.es.md`: Features table, Tools section (numbered), TOC anchor, smoke count.
-6. Update **both** `docs/tools.md` + `docs/es/tools.md`: add section `## 13. ...` with JSON examples.
-7. Run `make lint && make test` (must be `47→48 tools`).
+6. Update **both** `docs/tools.md` + `docs/es/tools.md`: add section `## 14. ...` with JSON examples.
+7. Run `make lint && make test` (must be `52→53 tools`).
 8. Commit bilingual docs together.
 
 ### 3.3 Yarn 4 + Make
@@ -81,8 +81,8 @@ Same for `README.md` ↔ `README.es.md`.
 - `yarn.lock` must be committed; `yarn install --immutable` in CI.
 
 ### 3.4 Versioning & Docs Counts
-- Current: **47 tools**, **1.3.0**, **2250 lines**. When you add a tool, search-replace `47 → 48` in `README*`, `docs/**/tools.md`, `docs/**/development.md`, `docs/**/architecture.md`, `SECURITY.md`, `package.json`, and `index.js` log.
-- Never leave `25`/`31`/`43` leftovers — the `AGENTS.md` check above must pass.
+- Current: **52 tools**, **1.4.0**, **2250 lines**. When you add a tool, search-replace `52 → 53` in `README*`, `docs/**/tools.md`, `docs/**/development.md`, `docs/**/architecture.md`, `SECURITY.md`, `package.json`, and `index.js` log.
+- Never leave `25`/`31`/`43`/`47` leftovers — the `AGENTS.md` check above must pass.
 
 ---
 
@@ -126,8 +126,8 @@ If you change MCP transport or args, test all three. Document in **both** `READM
 
 ```bash
 make lint
-make test          # must show 47 tools
-grep -r "25 tools\|31 tools\|43 tools" --include="*.md" . && echo "FAIL" || echo "OK bilingual counts"
+make test          # must show 52 tools
+grep -r "25 tools\|31 tools\|43 tools\|47 tools" --include="*.md" . && echo "FAIL" || echo "OK bilingual counts"
 ls docs/es/*.md | wc -l  # must equal ls docs/*.md | wc -l
 node --check index.js
 ```
@@ -145,4 +145,4 @@ If any check fails, fix before `git push`.
 
 ---
 
-*Maintained by [@YanxReal](https://github.com/YanxReal) — last updated 2026-08-27 for 47 tools, v1.3.0, Yarn 4 + Make + CI + Vision/UI.*
+*Maintained by [@YanxReal](https://github.com/YanxReal) — last updated 2026-08-27 for 52 tools, v1.4.0, Yarn 4 + Make + CI + Vision/UI.*

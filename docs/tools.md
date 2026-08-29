@@ -1,4 +1,4 @@
-# Tools Reference (47)
+# Tools Reference (52)
 
 > 🌐 **Language:** **English** | [Español](es/tools.md)
 

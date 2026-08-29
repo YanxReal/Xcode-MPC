@@ -18,7 +18,7 @@ make dev       # watch mode
 
 ```
 Xcode-MPC/
-├── index.js                 # servidor MCP single-file (2250 líneas, 47 tools)
+├── index.js                 # servidor MCP single-file (2250 líneas, 52 tools)
 ├── package.json             # Yarn 4, type:module, bin
 ├── yarn.lock                # lockfile inmutable
 ├── .yarnrc.yml              # yarnPath vendorizado

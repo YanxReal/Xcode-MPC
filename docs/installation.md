@@ -91,7 +91,7 @@ make lint
 # ✓ lint ok
 
 make test
-# ✓ tools/list: 47 tools
+# ✓ tools/list: 52 tools
 # ✓ xcode_sync_strings OK
 # ✓ smoke test PASSED
 ```
