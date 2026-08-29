@@ -1,4 +1,4 @@
-.PHONY: help install deps clean reinstall lint check start dev inspect test fmt doctor enable-corepack
+.PHONY: help install deps clean reinstall lint check start dev inspect test fmt doctor enable-corepack skills install-skills uninstall-skills list-skills skills-help
 
 # Variables
 YARN ?= yarn
@@ -105,3 +105,21 @@ release: ## Crea tag y push (usa VERSION env, ej: make release VERSION=1.0.1)
 	git tag v$(VERSION)
 	git push && git push --tags
 	@echo "✓ release v$(VERSION) pusheado"
+
+# Skills
+skills: install-skills ## Alias de install-skills
+
+install-skills: ## Instala skills (5 skills, 52 tools) a ~/.agents/skills, ~/.claude/skills, etc.
+	@echo "➜ instalando skills..."
+	@bash scripts/install-skills.sh $(if $(FORCE),--force,) $(if $(DEST),--dest $(DEST),)
+	@echo "✓ skills instalados — prueba: make list-skills"
+
+uninstall-skills: ## Desinstala skills de todos los destinos
+	@bash scripts/install-skills.sh --uninstall
+	@echo "✓ skills desinstalados"
+
+list-skills: ## Lista skills instalados
+	@bash scripts/install-skills.sh --list
+
+skills-help: ## Ayuda detallada de skills
+	@bash scripts/install-skills.sh --help

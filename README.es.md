@@ -412,6 +412,23 @@ Detalles → [`docs/es/development.md`](docs/es/development.md)
 | [`claude-code.md`](docs/es/claude-code.md) | Claude Code | `claude mcp add` / `.mcp.json`, permisos, trust |
 | [`development.md`](docs/es/development.md) | Contribuidores | Estructura, cómo añadir tool, CI, release |
 | [`architecture.md`](docs/es/architecture.md) | Curiosos | Por qué single-file, helpers, dispatcher, flujo stdio |
+| [`skills.md`](docs/es/skills.md) | Todos | 5 skills (52 tools): `xcode-mpc`, `xcode-build`, `xcode-simulator-vision`, `xcode-assets`, `xcode-package` — `make install-skills` |
+
+---
+
+## 🧩 Skills (5 Skills, 52 Herramientas)
+
+Packs modulares que enseñan a tu agente IA cuándo usar cada tool. Instalador fácil vía Make:
+
+```bash
+make install          # 1. Servidor MCP (Yarn)
+make install-skills   # 2. Skills → ~/.agents/skills, ~/.claude/skills, ~/.codex/skills, ~/.config/opencode/skills
+make test             # 3. Verifica 52 herramientas
+make list-skills      # lista instalados
+make uninstall-skills # desinstala
+```
+
+Incluye: `xcode-mpc` (52, principal), `xcode-build` (8), `xcode-simulator-vision` (20), `xcode-assets` (7), `xcode-package` (11). Ver [`skills/README.md`](skills/README.md) y [`docs/es/skills.md`](docs/es/skills.md). Manual: `./scripts/install-skills.sh --dry-run`.
 
 ---
 

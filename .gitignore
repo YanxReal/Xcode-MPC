@@ -31,11 +31,14 @@ Thumbs.db
 *.p12
 *.mobileprovision
 
-# Editor
+# Editor / Agents local installs (skills installed via make install-skills)
 .vscode/
 .idea/
 *.code-workspace
 .opencode/
+.agents/
+.claude/
+.codex/
 
 # Logs
 npm-debug.log*
